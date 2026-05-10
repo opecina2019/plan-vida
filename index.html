@@ -476,7 +476,7 @@ function renderContent(){
         const urlS=isPascS?U.reginacoeli:U.salve;
         const labelS=isPascS?'Regina Coeli — devocionario':'Salve — devocionario';
         const noteS=isPascS?'Tiempo pascual: desde Pascua hasta Pentecostés (24 mayo).':'Tiempo ordinario: el resto del año litúrgico.';
-        boxes+=`<div class="mbox morado" id="sv-${day.key}-${item.id}"><div class="mbox-title morado">${isPascS?'Regina Coeli':'Salve} — norma del sábado</div><div class="mbtns"><a class="alink al-morado" href="${urlS}" target="_blank">↗ ${labelS}</a></div><div class="mnote">${noteS}</div></div>`;
+        boxes+=`<div class="mbox morado" id="sv-${day.key}-${item.id}"><div class="mbox-title morado">${isPascS?'Regina Coeli':'Salve'} — norma del sábado</div><div class="mbtns"><a class="alink al-morado" href="${urlS}" target="_blank">↗ ${labelS}</a></div><div class="mnote">${noteS}</div></div>`;
       }
       if(item.ofs) boxes+=`<div class="mbox morado" id="of-${day.key}-${item.id}"><div class="mbox-title morado">Oh Señora mía — devocionario</div><div class="mbtns"><a class="alink al-morado" href="${U.ohsenora}" target="_blank">↗ Abrir en el devocionario</a></div></div>`;
       if(item.misa) boxes+=`<div class="mbox green" id="mi-${day.key}-${item.id}"><div class="mbox-title green">Seguir la misa con ITHECA</div><div class="mbtns"><a class="alink al-green" href="${U.itheca}" target="_blank">↗ Abrir ITHECA en Google Play</a></div><div class="mnote">Abre la app antes de entrar a la iglesia.</div></div>`;
