@@ -98,6 +98,18 @@ body{font-family:system-ui,sans-serif;background:#f5f5f5;padding:1rem;}
 .conflict-note{font-size:11px;color:#854F0B;display:flex;align-items:center;gap:4px;margin-bottom:.6rem;padding:5px 8px;background:#FAEEDA;border-radius:8px;border:1px solid #EF9F27;}
 .congrats{display:none;text-align:center;padding:1rem;background:#E1F5EE;border-radius:12px;margin-top:.8rem;}
 .congrats.show{display:block;}
+.cfg-section{margin-bottom:1.5rem;}
+.cfg-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:.6rem;display:flex;align-items:center;gap:6px;padding-bottom:6px;border-bottom:0.5px solid var(--color-border-tertiary);}
+.cfg-row{display:flex;flex-direction:column;gap:4px;margin-bottom:.8rem;}
+.cfg-label{font-size:12px;color:var(--color-text-secondary);}
+.cfg-input{padding:7px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary);width:100%;}
+.cfg-input:focus{outline:none;border-color:#1D9E75;}
+.cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cfg-banner{display:none;background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:var(--border-radius-md);padding:10px 12px;margin-bottom:1rem;}
+.cfg-banner.show{display:block;}
+.cfg-banner-title{font-size:13px;font-weight:500;color:#633806;margin-bottom:4px;}
+.cfg-banner-sub{font-size:12px;color:#854F0B;}
+.wa-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--border-radius-md);background:#25D366;color:white;border:none;font-size:13px;cursor:pointer;margin-top:8px;text-decoration:none;}
 .reset-btn{font-size:12px;color:#888;background:none;border:none;cursor:pointer;margin-top:.8rem;}
 .modal-bg{display:none;background:rgba(0,0,0,0.15);border-radius:12px;padding:1rem;margin-top:1rem;}
 .modal-bg.open{display:block;}
@@ -159,6 +171,9 @@ body{font-family:system-ui,sans-serif;background:#f5f5f5;padding:1rem;}
   <div class="prog-bg"><div class="prog-fill" id="pfill" style="width:0%"></div></div>
   <span class="prog-lbl" id="plbl">0/0</span>
 </div>
+<div id="banner-charla" class="cfg-banner"></div>
+<div id="banner-conf" class="cfg-banner"></div>
+<div id="banner-retiro" class="cfg-banner"></div>
 <div id="dcontent"></div>
 <div id="exam-modal" class="modal-bg"><div class="modal-inner" id="exam-inner"></div></div>
 <div style="text-align:right;"><button class="reset-btn" onclick="resetDay()">↺ Reiniciar día</button></div>
@@ -731,7 +746,158 @@ function mostrarIglesias(lat,lng,horaLimite){
   });
 }
 
-load();renderAll();
+// ========== CONFIGURACIÓN ==========
+function loadConfig(){
+  try{return JSON.parse(localStorage.getItem('pv_config')||'{}');}catch(e){return {};}
+}
+function saveConfig(cfg){
+  try{localStorage.setItem('pv_config',JSON.stringify(cfg));}catch(e){}
+}
+
+function showConfig(){
+  const modal=document.getElementById('config-modal');
+  const inner=document.getElementById('config-inner');
+  modal.classList.add('open');
+  const cfg=loadConfig();
+  inner.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div style="font-size:15px;font-weight:500;color:var(--color-text-primary);"><i class="ti ti-settings" aria-hidden="true" style="font-size:16px;color:#534AB7;margin-right:6px;"></i>Configuración</div>
+      <button onclick="closeConfig()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--color-text-secondary);">✕</button>
+    </div>
+
+    <div class="cfg-section">
+      <div class="cfg-title"><i class="ti ti-users" aria-hidden="true" style="color:#1D9E75;"></i> Círculo</div>
+      <div class="cfg-grid">
+        <div class="cfg-row"><label class="cfg-label">Día</label>
+          <select class="cfg-input" id="cfg-circulo-dia">
+            ${['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map(d=>`<option value="${d}" ${cfg.circulo?.dia===d?'selected':''}>${d}</option>`).join('')}
+          </select>
+        </div>
+        <div class="cfg-row"><label class="cfg-label">Hora</label><input class="cfg-input" type="time" id="cfg-circulo-hora" value="${cfg.circulo?.hora||''}"></div>
+      </div>
+      <div class="cfg-row"><label class="cfg-label">Lugar</label><input class="cfg-input" type="text" id="cfg-circulo-lugar" placeholder="Ej: Centro de estudios" value="${cfg.circulo?.lugar||''}"></div>
+    </div>
+
+    <div class="cfg-section">
+      <div class="cfg-title"><i class="ti ti-mountain" aria-hidden="true" style="color:#534AB7;"></i> Retiro mensual</div>
+      <div class="cfg-grid">
+        <div class="cfg-row"><label class="cfg-label">Día del mes</label><input class="cfg-input" type="number" min="1" max="31" id="cfg-retiro-dia" placeholder="Ej: 15" value="${cfg.retiro?.dia||''}"></div>
+        <div class="cfg-row"><label class="cfg-label">Hora</label><input class="cfg-input" type="time" id="cfg-retiro-hora" value="${cfg.retiro?.hora||''}"></div>
+      </div>
+      <div class="cfg-row"><label class="cfg-label">Lugar</label><input class="cfg-input" type="text" id="cfg-retiro-lugar" placeholder="Ej: Casa de Ejercicios" value="${cfg.retiro?.lugar||''}"></div>
+    </div>
+
+    <div class="cfg-section">
+      <div class="cfg-title"><i class="ti ti-message-circle" aria-hidden="true" style="color:#BA7517;"></i> Charla fraterna</div>
+      <div class="cfg-grid">
+        <div class="cfg-row"><label class="cfg-label">Día</label>
+          <select class="cfg-input" id="cfg-charla-dia">
+            ${['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map(d=>`<option value="${d}" ${cfg.charla?.dia===d?'selected':''}>${d}</option>`).join('')}
+          </select>
+        </div>
+        <div class="cfg-row"><label class="cfg-label">Hora</label><input class="cfg-input" type="time" id="cfg-charla-hora" value="${cfg.charla?.hora||''}"></div>
+      </div>
+      <div class="cfg-row"><label class="cfg-label">Lugar</label><input class="cfg-input" type="text" id="cfg-charla-lugar" placeholder="Ej: Cafetería del centro" value="${cfg.charla?.lugar||''}"></div>
+      <div class="cfg-grid">
+        <div class="cfg-row"><label class="cfg-label">Nombre del contacto</label><input class="cfg-input" type="text" id="cfg-charla-nombre" placeholder="Ej: Javier" value="${cfg.charla?.nombre||''}"></div>
+        <div class="cfg-row"><label class="cfg-label">WhatsApp (+34...)</label><input class="cfg-input" type="tel" id="cfg-charla-tel" placeholder="+34600000000" value="${cfg.charla?.tel||''}"></div>
+      </div>
+    </div>
+
+    <div class="cfg-section">
+      <div class="cfg-title"><i class="ti ti-building-church" aria-hidden="true" style="color:#A32D2D;"></i> Confesión semanal</div>
+      <div class="cfg-grid">
+        <div class="cfg-row"><label class="cfg-label">Día</label>
+          <select class="cfg-input" id="cfg-conf-dia">
+            ${['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'].map(d=>`<option value="${d}" ${cfg.confesion?.dia===d?'selected':''}>${d}</option>`).join('')}
+          </select>
+        </div>
+        <div class="cfg-row"><label class="cfg-label">Hora</label><input class="cfg-input" type="time" id="cfg-conf-hora" value="${cfg.confesion?.hora||''}"></div>
+      </div>
+      <div class="cfg-row"><label class="cfg-label">Lugar</label><input class="cfg-input" type="text" id="cfg-conf-lugar" placeholder="Ej: Iglesia San Agustín" value="${cfg.confesion?.lugar||''}"></div>
+    </div>
+
+    <button class="ebtn pri" onclick="guardarConfig()" style="width:100%;justify-content:center;"><i class="ti ti-device-floppy" aria-hidden="true"></i> Guardar configuración</button>
+  `;
+  modal.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function closeConfig(){
+  document.getElementById('config-modal').classList.remove('open');
+}
+
+function guardarConfig(){
+  const cfg={
+    circulo:{
+      dia:document.getElementById('cfg-circulo-dia').value,
+      hora:document.getElementById('cfg-circulo-hora').value,
+      lugar:document.getElementById('cfg-circulo-lugar').value,
+    },
+    retiro:{
+      dia:document.getElementById('cfg-retiro-dia').value,
+      hora:document.getElementById('cfg-retiro-hora').value,
+      lugar:document.getElementById('cfg-retiro-lugar').value,
+    },
+    charla:{
+      dia:document.getElementById('cfg-charla-dia').value,
+      hora:document.getElementById('cfg-charla-hora').value,
+      lugar:document.getElementById('cfg-charla-lugar').value,
+      nombre:document.getElementById('cfg-charla-nombre').value,
+      tel:document.getElementById('cfg-charla-tel').value,
+    },
+    confesion:{
+      dia:document.getElementById('cfg-conf-dia').value,
+      hora:document.getElementById('cfg-conf-hora').value,
+      lugar:document.getElementById('cfg-conf-lugar').value,
+    },
+  };
+  saveConfig(cfg);
+  closeConfig();
+  checkBanners();
+  renderAll();
+  // Confirmación visual
+  const btn=document.querySelector('#config-inner .ebtn.pri');
+  if(btn){btn.textContent='✓ Guardado';setTimeout(()=>closeConfig(),800);}
+}
+
+// ========== BANNERS DE RECORDATORIO ==========
+function checkBanners(){
+  const cfg=loadConfig();
+  const now=new Date();
+  const tomorrow=new Date(now);
+  tomorrow.setDate(tomorrow.getDate()+1);
+  const tomorrowDay=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][tomorrow.getDay()];
+  const tomorrowDate=tomorrow.getDate();
+
+  // Banner charla fraterna — si mañana es el día de la charla
+  const charlaDiv=document.getElementById('banner-charla');
+  if(charlaDiv&&cfg.charla?.dia&&cfg.charla.dia===tomorrowDay&&cfg.charla.tel){
+    const tel=cfg.charla.tel.replace(/[^0-9+]/g,'');
+    const msg=encodeURIComponent(`Hola ${cfg.charla.nombre||''}, te confirmo nuestra charla fraterna mañana ${tomorrowDay} a las ${cfg.charla.hora} en ${cfg.charla.lugar}. ¿Todo bien?`);
+    charlaDiv.className='cfg-banner show';
+    charlaDiv.innerHTML=`<div class="cfg-banner-title"><i class="ti ti-message-circle" aria-hidden="true" style="font-size:13px;margin-right:4px;"></i>Mañana tienes charla fraterna</div>
+    <div class="cfg-banner-sub">${tomorrowDay} · ${cfg.charla.hora} · ${cfg.charla.lugar}</div>
+    <a class="wa-btn" href="https://wa.me/${tel}?text=${msg}" target="_blank"><i class="ti ti-brand-whatsapp" aria-hidden="true" style="font-size:16px;"></i> Confirmar con ${cfg.charla.nombre||'tu contacto'}</a>`;
+  } else if(charlaDiv){charlaDiv.className='cfg-banner';}
+
+  // Banner confesión — si mañana es el día de confesión
+  const confDiv=document.getElementById('banner-conf');
+  if(confDiv&&cfg.confesion?.dia&&cfg.confesion.dia===tomorrowDay){
+    confDiv.className='cfg-banner show';
+    confDiv.innerHTML=`<div class="cfg-banner-title"><i class="ti ti-building-church" aria-hidden="true" style="font-size:13px;margin-right:4px;color:#A32D2D;"></i>Mañana tienes confesión</div>
+    <div class="cfg-banner-sub">${tomorrowDay} · ${cfg.confesion.hora} · ${cfg.confesion.lugar}</div>`;
+  } else if(confDiv){confDiv.className='cfg-banner';}
+
+  // Banner retiro mensual — si mañana es el día del retiro
+  const retiroDiv=document.getElementById('banner-retiro');
+  if(retiroDiv&&cfg.retiro?.dia&&parseInt(cfg.retiro.dia)===tomorrowDate){
+    retiroDiv.className='cfg-banner show';
+    retiroDiv.innerHTML=`<div class="cfg-banner-title"><i class="ti ti-mountain" aria-hidden="true" style="font-size:13px;margin-right:4px;color:#534AB7;"></i>Mañana tienes retiro mensual</div>
+    <div class="cfg-banner-sub">Día ${cfg.retiro.dia} · ${cfg.retiro.hora} · ${cfg.retiro.lugar}</div>`;
+  } else if(retiroDiv){retiroDiv.className='cfg-banner';}
+}
+
+load();renderAll();checkBanners();
 </script>
 </body>
 </html>
