@@ -183,15 +183,45 @@ const U={
   whatsapp:'https://wa.me/34608467814',
 };
 const M={
+  dom:{n:'Misterios Gloriosos',bg:'#EEEDFE',c:'#3C3489',bc:'#AFA9EC'},
   lun:{n:'Misterios Gozosos',bg:'#E1F5EE',c:'#085041',bc:'#9FE1CB'},
   mar:{n:'Misterios Dolorosos',bg:'#FCEBEB',c:'#A32D2D',bc:'#F7C1C1'},
   mie:{n:'Misterios Gloriosos',bg:'#EEEDFE',c:'#3C3489',bc:'#AFA9EC'},
   jue:{n:'Misterios Luminosos',bg:'#FAEEDA',c:'#854F0B',bc:'#FAC775'},
   vie:{n:'Misterios Dolorosos',bg:'#FCEBEB',c:'#A32D2D',bc:'#F7C1C1'},
+  sab:{n:'Misterios Gozosos',bg:'#E1F5EE',c:'#085041',bc:'#9FE1CB'},
 };
 const ACORDAOS='Acordaos, oh piadosísima Virgen María, que jamás se ha oído decir que ninguno de los que han acudido a vuestra protección, implorando vuestra asistencia y reclamando vuestro socorro, haya sido abandonado de vos.\n\nAnimado con esta confianza, a vos también acudo, oh Madre, Virgen de vírgenes; y, aunque gimiendo bajo el peso de mis pecados, me atrevo a aparecer ante vuestra presencia soberana.\n\nNo desechéis, oh Madre de Dios, mis humildes súplicas, antes bien escuchadlas y atendedlas favorablemente. Amén.';
 
 const DAYS=[
+  {key:'dom',label:'Dom',warn:false,wakeTime:'07:00',bedTime:'23:00',nextLabel:'Lun 11',nextWake:'06:43',nextBed:'22:43',
+   nextEvents:[{n:'Reunión planificación',t:'09:00–09:30'},{n:'Federación de empresarios',t:'10:00–10:30'}],
+   secs:[
+    {lbl:'Amanecer',items:[
+      {id:'mh',n:'Minuto heroico',t:'07:00',tag:'¡ahora!',hero:true,g:'De un salto. El domingo también empieza con una victoria.'},
+      {id:'oo',n:'Ofrecimiento de obras',t:'07:01',tag:'1 min',ofs:true,g:'"Señor, te ofrezco este domingo. Ayúdame a descansar y a rezar bien."'},
+      {id:'ar',n:'Arreglarse y desayunar',t:'07:01–07:31',tag:'30 min',g:'Con calma. El domingo es para recuperar energía.'},
+      {id:'om',n:'Oración de la mañana',t:'07:31–08:01',tag:'30 min',om:true,g:'10 min con Jesús + meditación del día + estampa de San Josemaría.'},
+    ]},
+    {lbl:'Misa de 12:00',items:[
+      {id:'dp1',n:'Desplazamiento a la iglesia',t:'11:45',tag:'15 min',iglesia:true,g:'San Antonio de Padua (Logroño) — Calle del Ebro, 2. Sale 15 min antes de las 12:00.'},
+      {id:'mi',n:'Misa',t:'12:00–12:20',tag:'20 min',misa:true,g:'Misa dominical en San Antonio de Padua con ITHECA. Misterios Gloriosos.'},
+      {id:'ag',n:'Acción de gracias post-misa',t:'12:20–12:30',tag:'10 min',gracias:true,g:'Devocionario "Después de Misa" + Acordaos a la Virgen.'},
+    ]},
+    {lbl:'Durante el día',items:[
+      {id:'an1',n:'Ángelus de mediodía',t:'14:00',tag:'5 min',g:'Tras la comida del domingo.'},
+      {id:'lec',n:'Lectura espiritual',t:'A elegir',tag:'15 min',g:'El domingo hay más tiempo. Lee con calma.'},
+      {id:'ros',n:'Rosario',t:'A elegir',tag:'20 min',ros:true,g:'Misterios Gloriosos. Domingo es el día más luminoso para rezarlo.'},
+      {id:'vis',n:'Visita al Santísimo',t:'A elegir',tag:'10 min',g:'Si tienes iglesia cercana abierta por la tarde.'},
+      {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'También el descanso y la familia se pueden ofrecer a Dios.'},
+    ]},
+    {lbl:'Tarde / Noche',items:[
+      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al cerrar la tarde del domingo.'},
+      {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
+      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Repasa el domingo con gratitud. Prepara la semana.'},
+      {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno con el plan del lunes.'},
+    ]},
+  ]},
   {key:'lun',label:'Lun 11',warn:true,wakeTime:'06:43',bedTime:'22:43',nextLabel:'Mar 12',nextWake:'06:43',nextBed:'22:43',
    nextEvents:[{n:'Reunión planificación',t:'09:00–09:30'},{n:'Federación de empresarios',t:'10:00–10:30'}],
    secs:[
@@ -330,7 +360,14 @@ const DAYS=[
 
 const NORMAS=['Minuto heroico','Ofrecimiento de obras','Oración de la mañana','Misa','Acción de gracias','Ángelus mediodía','Lectura espiritual','Rosario','Visita al Santísimo','Santificación','Ángelus tarde','Oración de la tarde','Oración nocturna'];
 
-let curDay=0,state={},exam={step:0,normas:{},nota:3,prop:'',sent:''},examOpen=false;
+// Detectar día actual automáticamente
+const DAY_KEYS=['dom','lun','mar','mie','jue','vie','sab'];
+const today=new Date();
+const todayKey=DAY_KEYS[today.getDay()];
+const todayIdx=DAYS.findIndex(d=>d.key===todayKey);
+let curDay=todayIdx>=0?todayIdx:0;
+let state={};
+// exam={step:0,normas:{},nota:3,prop:'',sent:''},examOpen=false;
 function sk(k,id){return k+'_'+id;}
 function load(){try{const s=localStorage.getItem('pv9');if(s)state=JSON.parse(s);}catch(e){}}
 function save(){try{localStorage.setItem('pv9',JSON.stringify(state));}catch(e){}}
