@@ -181,6 +181,8 @@ const U={
   escriva:'https://www.escriva.org/es/',
   horariosdemisa:'https://play.google.com/store/apps/details?id=com.itsharedservices.hdsmyc.app',
   whatsapp:'https://wa.me/34608467814',
+  salve:'https://opusdei.org/es/prayers/section/?section1=25&section2=35#dm-prayer-143',
+  reginacoeli:'https://opusdei.org/es/prayers/section/?section1=25&section2=35#dm-prayer-144',
 };
 const M={
   dom:{n:'Misterios Gloriosos',bg:'#EEEDFE',c:'#3C3489',bc:'#AFA9EC'},
@@ -329,7 +331,37 @@ const DAYS=[
       {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno.'},
     ]},
   ]},
-  {key:'vie',label:'Vie 15',warn:true,wakeTime:'06:43',bedTime:'22:43',nextLabel:'Fin de semana',nextWake:'–',nextBed:'–',
+  {key:'sab',label:'Sáb',warn:false,wakeTime:'08:00',bedTime:'00:00',nextLabel:'Dom',nextWake:'07:00',nextBed:'23:00',
+   nextEvents:[],
+   secs:[
+    {lbl:'Amanecer',items:[
+      {id:'mh',n:'Minuto heroico',t:'08:00',tag:'¡ahora!',hero:true,g:'Sábado libre. Levántate de un salto igualmente — la virtud no descansa.'},
+      {id:'oo',n:'Ofrecimiento de obras',t:'08:01',tag:'1 min',ofs:true,g:'"Señor, te ofrezco este sábado. El descanso y la familia también son tuyos."'},
+      {id:'ar',n:'Arreglarse y desayunar',t:'08:01–08:31',tag:'30 min',g:'Con calma. El sábado el desayuno puede ser más largo.'},
+      {id:'om',n:'Oración de la mañana',t:'08:31–09:01',tag:'30 min',om:true,g:'10 min con Jesús + meditación del día + estampa de San Josemaría.'},
+      {id:'dp1',n:'Desplazamiento a la iglesia',t:'09:01–09:16',tag:'15 min',iglesia:true,g:'Busca misa de mañana en Logroño con la app Horarios de Misa.'},
+      {id:'mi',n:'Misa',t:'09:15–09:35',tag:'20 min',misa:true,g:'Misa del sábado con ITHECA.'},
+      {id:'ag',n:'Acción de gracias post-misa',t:'09:35–09:45',tag:'10 min',gracias:true,g:'Devocionario "Después de Misa" + Acordaos a la Virgen.'},
+    ]},
+    {lbl:'Durante el día',items:[
+      {id:'an1',n:'Ángelus de mediodía',t:'12:00',tag:'5 min',g:'Pausa de mediodía.'},
+      {id:'lec',n:'Lectura espiritual',t:'A elegir',tag:'15 min',g:'Día libre: lee con calma y sin prisas.',
+       res:[
+         {label:'Escrivá.org — obras completas',href:'https://www.escriva.org/es/',cls:'rl-purple'},
+       ]},
+      {id:'ros',n:'Rosario',t:'A elegir',tag:'20 min',ros:true,g:'Misterios Gozosos. El sábado es el día de la Virgen — rézalo con especial devoción.'},
+      {id:'vis',n:'Visita al Santísimo',t:'A elegir',tag:'10 min',g:'Salida tranquila por Logroño. Busca una iglesia abierta.'},
+      {id:'salve',n:'Salve o Regina Coeli',t:'A elegir',tag:'5 min',salve:true,g:'Norma propia del sábado. En tiempo pascual (Pascua–Pentecostés): Regina Coeli. El resto del año: Salve.'},
+      {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'El descanso, la familia y el ocio también se ofrecen a Dios.'},
+    ]},
+    {lbl:'Tarde / Noche',items:[
+      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al cerrar la tarde del sábado.'},
+      {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
+      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Repasa el sábado con gratitud. Prepara el domingo.'},
+      {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno con el plan del domingo.'},
+    ]},
+  ]},
+    {key:'vie',label:'Vie 15',warn:true,wakeTime:'06:43',bedTime:'22:43',nextLabel:'Fin de semana',nextWake:'–',nextBed:'–',
    nextEvents:[],
    secs:[
     {lbl:'Amanecer',items:[
@@ -412,6 +444,7 @@ function renderContent(){
 
       let tags='';
       if(item.ofs) tags+=`<span class="clicktag ct-morado" data-t="of-${day.key}-${item.id}">🙏 Oh Señora mía</span>`;
+      if(item.salve){const now=new Date();const isPasc=now>=new Date('2026-04-05')&&now<=new Date('2026-05-24');tags+=`<span class="clicktag ct-morado" data-t="sv-${day.key}-${item.id}">${isPasc?'🕊 Regina Coeli':'🕊 Salve'}</span>`;}
       if(item.iglesia) tags+=`<span class="clicktag ct-amber" data-t="igl-${day.key}-${item.id}">⛪ Horarios de Misa</span>`;
       if(item.misa) tags+=`<span class="clicktag ct-gtag" data-t="mi-${day.key}-${item.id}">📱 ITHECA</span>`;
       if(item.ros) tags+=`<span class="clicktag ct-green" data-t="ros-${day.key}-${item.id}">📿 rosario</span>`;
@@ -422,6 +455,14 @@ function renderContent(){
 
       let boxes='';
       if(item.iglesia) boxes+=`<div class="mbox amber" id="igl-${day.key}-${item.id}"><div class="mbox-title amber">⛪ Buscar misa cercana</div><div class="mbtns"><a class="alink al-amber" href="${U.horariosdemisa}" target="_blank">📍 Abrir Horarios de Misa</a></div><div class="mnote">Busca la iglesia más cercana y el horario que mejor te venga.</div></div>`;
+      if(item.salve){
+        const nowS=new Date();
+        const isPascS=nowS>=new Date('2026-04-05')&&nowS<=new Date('2026-05-24');
+        const urlS=isPascS?U.reginacoeli:U.salve;
+        const labelS=isPascS?'Regina Coeli — devocionario':'Salve — devocionario';
+        const noteS=isPascS?'Tiempo pascual: desde Pascua hasta Pentecostés (24 mayo).':'Tiempo ordinario: el resto del año litúrgico.';
+        boxes+=`<div class="mbox morado" id="sv-${day.key}-${item.id}"><div class="mbox-title morado">${isPascS?'Regina Coeli':'Salve} — norma del sábado</div><div class="mbtns"><a class="alink al-morado" href="${urlS}" target="_blank">↗ ${labelS}</a></div><div class="mnote">${noteS}</div></div>`;
+      }
       if(item.ofs) boxes+=`<div class="mbox morado" id="of-${day.key}-${item.id}"><div class="mbox-title morado">Oh Señora mía — devocionario</div><div class="mbtns"><a class="alink al-morado" href="${U.ohsenora}" target="_blank">↗ Abrir en el devocionario</a></div></div>`;
       if(item.misa) boxes+=`<div class="mbox green" id="mi-${day.key}-${item.id}"><div class="mbox-title green">Seguir la misa con ITHECA</div><div class="mbtns"><a class="alink al-green" href="${U.itheca}" target="_blank">↗ Abrir ITHECA en Google Play</a></div><div class="mnote">Abre la app antes de entrar a la iglesia.</div></div>`;
       if(item.ros) boxes+=`<div class="mbox verde" id="ros-${day.key}-${item.id}"><div class="misterio" style="background:${m.bg};color:${m.c};border:1px solid ${m.bc};">📿 ${m.n}</div><div class="mbox-title verde">Abrir en dos pestañas:</div><div class="mbtns"><a class="alink al-spotify" href="${U.spotify}" target="_blank">▶️ Santo Rosario Opus Dei</a><a class="alink al-yt" href="${U.ytmusica}" target="_blank">🎵 Música de fondo</a></div><div class="mnote">Música a volumen bajo (20–30%), rosario al 100%.</div></div>`;
