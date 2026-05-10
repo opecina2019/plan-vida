@@ -176,6 +176,7 @@ body{font-family:system-ui,sans-serif;background:#f5f5f5;padding:1rem;}
 <div id="banner-retiro" class="cfg-banner"></div>
 <div id="dcontent"></div>
 <div id="exam-modal" class="modal-bg"><div class="modal-inner" id="exam-inner"></div></div>
+<div id="config-modal" class="modal-bg"><div class="modal-inner" id="config-inner"></div></div>
 <div style="text-align:right;"><button class="reset-btn" onclick="resetDay()">↺ Reiniciar día</button></div>
 </div>
 
@@ -189,7 +190,7 @@ const U={
   despuesmisa:'https://opusdei.org/es/prayers/section/?section1=27&section2=37',
   opusdeiyt:'https://www.youtube.com/@PrelatureofOpusDei/videos',
   ohsenora:'https://opusdei.org/es/prayers/section/?section1=25&section2=35#dm-prayer-148',
-  itheca:'https://play.google.com/store/apps/details?id=org.itheca.android',
+  itheca:'https://play.google.com/store/apps/details?id=com.itheca.itheca',
   cronica:'https://cronicadigital.org/es/category/2026-es/mayo-2026-es/',
   prelado:'https://opusdei.org/es/section/messages-from-the-prelate/',
   friendsofgod:'https://www.youtube.com/playlist?list=PLLaXSTFKsZt2Athe_8hcneCH2fCUx0a',
@@ -198,6 +199,8 @@ const U={
   whatsapp:'https://wa.me/34608467814',
   salve:'https://opusdei.org/es/prayers/section/?section1=25&section2=35#dm-prayer-143',
   reginacoeli:'https://opusdei.org/es/prayers/section/?section1=25&section2=35#dm-prayer-144',
+  preces:'https://soundcloud.com/opusdei/preces-opus-dei?si=c88d5075c8744217b5183d9e2a1efad4',
+  nuevotestamento:'https://multimedia.opusdei.org/pdf/es/preces.pdf',
 };
 const M={
   dom:{n:'Misterios Gloriosos',bg:'#EEEDFE',c:'#3C3489',bc:'#AFA9EC'},
@@ -226,16 +229,16 @@ const DAYS=[
       {id:'ag',n:'Acción de gracias post-misa',t:'12:20–12:30',tag:'10 min',gracias:true,g:'Devocionario "Después de Misa" + Acordaos a la Virgen.'},
     ]},
     {lbl:'Durante el día',items:[
-      {id:'an1',n:'Ángelus de mediodía',t:'14:00',tag:'5 min',g:'Tras la comida del domingo.'},
+      {id:'an1',n:'Ángelus de mediodía',t:'12:00',tag:'5 min',g:'A las 12:00, todos los días sin excepción.'},
       {id:'lec',n:'Lectura espiritual',t:'A elegir',tag:'15 min',g:'El domingo hay más tiempo. Lee con calma.'},
       {id:'ros',n:'Rosario',t:'A elegir',tag:'20 min',ros:true,g:'Misterios Gloriosos. Domingo es el día más luminoso para rezarlo.'},
       {id:'vis',n:'Visita al Santísimo',t:'A elegir',tag:'10 min',g:'Si tienes iglesia cercana abierta por la tarde.'},
       {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'También el descanso y la familia se pueden ofrecer a Dios.'},
     ]},
     {lbl:'Tarde / Noche',items:[
-      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al cerrar la tarde del domingo.'},
+      
       {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
-      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Repasa el domingo con gratitud. Prepara la semana.'},
+      
       {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno con el plan del lunes.'},
     ]},
   ]},
@@ -260,9 +263,10 @@ const DAYS=[
       {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'Antes de cada reunión: "Señor, esto lo hago por ti."'},
     ]},
     {lbl:'Tarde / Noche',items:[
-      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al cerrar la jornada.'},
+,
       {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
-      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Repasa el día con gratitud.'},
+      
+      {id:'pr',n:'Preces',t:'22:00',tag:'10 min',preces:true,g:'Oración comunitaria del Opus Dei. Escúchala en SoundCloud.'},
       {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno.'},
     ]},
   ]},
@@ -282,14 +286,16 @@ const DAYS=[
     {lbl:'Durante el día',items:[
       {id:'an1',n:'Ángelus de mediodía',t:'12:00',tag:'5 min',g:'Pausa.'},
       {id:'lec',n:'Lectura espiritual',t:'13:00–13:15',tag:'15 min',g:'Tarde despejada.'},
+      {id:'nt',n:'Nuevo Testamento',t:'13:15–13:20',tag:'5 min',nt:true,g:'5 minutos de lectura del Nuevo Testamento.'},
       {id:'ros',n:'Rosario',t:'15:00–15:20',tag:'20 min',ros:true,g:'Misterios Dolorosos.'},
       {id:'vis',n:'Visita al Santísimo',t:'16:00–16:15',tag:'10 min',g:'Tarde libre.'},
       {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'Ofrece las reuniones antes de entrar.'},
     ]},
     {lbl:'Tarde / Noche',items:[
-      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al cerrar.'},
+      
       {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
-      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Aprovecha para profundizar.'},
+      
+      {id:'pr',n:'Preces',t:'22:00',tag:'10 min',preces:true,g:'Oración comunitaria del Opus Dei. Escúchala en SoundCloud.'},
       {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno.'},
     ]},
   ]},
@@ -308,14 +314,16 @@ const DAYS=[
     {lbl:'Durante el día',items:[
       {id:'an1',n:'Ángelus de mediodía',t:'12:00',tag:'5 min',g:'Pausa.'},
       {id:'lec',n:'Lectura espiritual',t:'13:00–13:15',tag:'15 min',g:'Antes de las reuniones.'},
+      {id:'nt',n:'Nuevo Testamento',t:'13:15–13:20',tag:'5 min',nt:true,g:'5 minutos de lectura del Nuevo Testamento.'},
       {id:'ros',n:'Rosario',t:'13:30–13:50',tag:'20 min',w:true,ros:true,g:'Misterios Gloriosos. Termina antes de las 15:30.'},
       {id:'vis',n:'Visita al Santísimo',t:'17:15–17:30',tag:'10 min',w:true,g:'Tras Honda y Odoo.'},
       {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'Ofrece el GO LIVE antes de empezar.'},
     ]},
     {lbl:'Tarde / Noche',items:[
-      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al acabar.'},
+      
       {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
-      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Repasa Honda y el GO LIVE con gratitud.'},
+      
+      {id:'pr',n:'Preces',t:'22:00',tag:'10 min',preces:true,g:'Oración comunitaria del Opus Dei. Escúchala en SoundCloud.'},
       {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno.'},
     ]},
   ]},
@@ -335,14 +343,16 @@ const DAYS=[
     {lbl:'Durante el día',items:[
       {id:'an1',n:'Ángelus de mediodía',t:'12:00',tag:'5 min',g:'Pausa.'},
       {id:'lec',n:'Lectura espiritual',t:'13:00–13:15',tag:'15 min',g:'Tarde despejada.'},
+      {id:'nt',n:'Nuevo Testamento',t:'13:15–13:20',tag:'5 min',nt:true,g:'5 minutos de lectura del Nuevo Testamento.'},
       {id:'ros',n:'Rosario',t:'15:30–15:50',tag:'20 min',ros:true,g:'Misterios Luminosos.'},
       {id:'vis',n:'Visita al Santísimo',t:'16:30–16:45',tag:'10 min',g:'Salida breve.'},
       {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'Ofrece cada reunión.'},
     ]},
     {lbl:'Tarde / Noche',items:[
-      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al cerrar.'},
+      
       {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
-      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Día tranquilo: profundiza.'},
+      
+      {id:'pr',n:'Preces',t:'22:00',tag:'10 min',preces:true,g:'Oración comunitaria del Opus Dei. Escúchala en SoundCloud.'},
       {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno.'},
     ]},
   ]},
@@ -370,9 +380,9 @@ const DAYS=[
       {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'El descanso, la familia y el ocio también se ofrecen a Dios.'},
     ]},
     {lbl:'Tarde / Noche',items:[
-      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al cerrar la tarde del sábado.'},
+      
       {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
-      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Repasa el sábado con gratitud. Prepara el domingo.'},
+      
       {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno con el plan del domingo.'},
     ]},
   ]},
@@ -392,14 +402,16 @@ const DAYS=[
     {lbl:'Durante el día',items:[
       {id:'an1',n:'Ángelus de mediodía',t:'11:50',tag:'5 min',g:'Antes de la Reunión export.'},
       {id:'lec',n:'Lectura espiritual',t:'14:15–14:30',tag:'15 min',w:true,g:'Único hueco entre design y Bexiflon.'},
+      {id:'nt',n:'Nuevo Testamento',t:'14:30–14:35',tag:'5 min',nt:true,g:'5 minutos de lectura del Nuevo Testamento.'},
       {id:'ros',n:'Rosario',t:'16:00–16:20',tag:'20 min',ros:true,g:'Misterios Dolorosos.'},
       {id:'vis',n:'Visita al Santísimo',t:'16:30–16:45',tag:'10 min',w:true,g:'Encadena con el rosario.'},
       {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'Ofrece cada reunión antes de entrar.'},
     ]},
     {lbl:'Tarde / Noche',items:[
-      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al cerrar el viernes.'},
+      
       {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
-      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Repasa la semana entera con gratitud.'},
+      
+      {id:'pr',n:'Preces',t:'22:00',tag:'10 min',preces:true,g:'Oración comunitaria del Opus Dei. Escúchala en SoundCloud.'},
       {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno.'},
     ]},
   ]},
@@ -466,9 +478,13 @@ function renderContent(){
       if(item.om) tags+=`<span class="clicktag ct-blue" data-t="ora-${day.key}-${item.id}">▶️ oración</span>`;
       if(item.ag) tags+=`<span class="clicktag ct-amber" data-t="gra-${day.key}-${item.id}">📖 devocionario</span>`;
       if(item.ot) tags+=`<span class="clicktag ct-purple" data-t="ot-${day.key}-${item.id}">📚 recursos</span>`;
+      if(item.preces) tags+=`<span class="clicktag ct-blue" data-t="pr-${day.key}-${item.id}">🎵 escuchar</span>`;
+      if(item.nt) tags+=`<span class="clicktag ct-amber" data-t="nt-${day.key}-${item.id}">📖 abrir PDF</span>`;
       if(item.exam) tags+=`<span class="tag tag-exam">🌙 abre asistente</span>`;
 
       let boxes='';
+      if(item.preces) boxes+=`<div class="mbox azul" id="pr-${day.key}-${item.id}"><div class="mbox-title azul">🎵 Preces — Opus Dei</div><div class="mbtns"><a class="alink al-blue" href="${U.preces}" target="_blank">▶️ Escuchar en SoundCloud</a></div><div class="mnote">Oración comunitaria del Opus Dei. Rézalas antes del examen de conciencia.</div></div>`;
+      if(item.nt) boxes+=`<div class="mbox amber" id="nt-${day.key}-${item.id}"><div class="mbox-title amber">📖 Nuevo Testamento</div><div class="mbtns"><a class="alink al-amber" href="${U.nuevotestamento}" target="_blank">📄 Abrir PDF</a></div><div class="mnote">5 minutos de lectura del Nuevo Testamento. PDF oficial del Opus Dei.</div></div>`;
       if(item.iglesia) boxes+=`<div class="mbox amber" id="igl-${day.key}-${item.id}"><div class="mbox-title amber">⛪ Buscar misa cercana</div><div class="mbtns"><a class="alink al-amber" href="${U.horariosdemisa}" target="_blank">📍 Abrir Horarios de Misa</a></div><div class="mnote">Busca la iglesia más cercana y el horario que mejor te venga.</div></div>`;
       if(item.salve){
         const nowS=new Date();
@@ -506,7 +522,12 @@ function renderContent(){
         const was=!!state[key];state[key]=!was;save();
         if(!was&&item.exam){examOpen=true;exam={step:0,normas:{},nota:3,prop:'',sent:''};}
         renderAll();
-        if(!was&&item.exam)document.getElementById('exam-modal').scrollIntoView({behavior:'smooth',block:'start'});
+        if(!was&&item.exam){
+          setTimeout(()=>{
+            const el=document.getElementById('exam-modal');
+            if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+          },150);
+        }
       });
       div.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',(e)=>{e.stopPropagation();document.getElementById(b.dataset.g).classList.toggle('open');}));
       div.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',(e)=>{e.stopPropagation();document.getElementById(b.dataset.t).classList.toggle('open');}));
@@ -578,7 +599,7 @@ function renderExam(){
       </div>
     `;
     inner.innerHTML+=`<div class="ebtn-row"><button class="ebtn" onclick="ePrev()">←</button><button class="ebtn pri" onclick="eNext()">Ver plan →</button></div>`;
-    setTimeout(()=>buscarIglesias(day.nextWake),100);
+    try{setTimeout(()=>buscarIglesias(day.nextWake),100);}catch(e){console.error('Error iglesias:',e);}
   } else if(s==='plan'){
     inner.innerHTML+=`<div class="eq">Plan para ${day.nextLabel}:</div><div class="ecard" id="planlist"></div>
     ${exam.prop?`<div class="ecard"><div class="ecard-lbl">Tu propósito</div><div style="font-size:13px;">${exam.prop}</div></div>`:''}
