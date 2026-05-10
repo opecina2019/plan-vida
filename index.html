@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan de Vida</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,sans-serif;background:#f5f5f5;padding:1rem;}
+.wrap{max-width:640px;margin:0 auto;}
+.day-tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
+.day-tab{font-size:12px;padding:4px 11px;border-radius:99px;border:1px solid #ccc;background:white;color:#555;cursor:pointer;}
+.day-tab.active{background:#1D9E75;color:white;border-color:#1D9E75;}
+.day-tab.warn{border-color:#BA7517;color:#BA7517;}
+.day-tab.active.warn{background:#BA7517;border-color:#BA7517;color:white;}
+.hero-banner{display:flex;align-items:center;justify-content:space-between;background:#EEEDFE;border:1px solid #AFA9EC;border-radius:12px;padding:.9rem 1.1rem;margin-bottom:1rem;}
+.hero-time{font-size:28px;font-weight:500;color:#3C3489;}
+.hero-label{font-size:11px;font-weight:500;color:#534AB7;text-transform:uppercase;letter-spacing:.07em;}
+.hero-sub{font-size:12px;color:#534AB7;margin-top:2px;}
+.bed-pill{display:flex;align-items:center;gap:6px;background:#E1F5EE;border:1px solid #1D9E75;border-radius:99px;padding:5px 12px;}
+.bed-label{font-size:12px;color:#085041;}
+.bed-time{font-size:14px;font-weight:500;color:#0F6E56;}
+.prog-row{display:flex;align-items:center;gap:8px;margin-bottom:1rem;}
+.prog-bg{flex:1;height:6px;background:#e0e0e0;border-radius:99px;}
+.prog-fill{height:6px;background:#1D9E75;border-radius:99px;transition:width .3s;}
+.prog-lbl{font-size:12px;color:#888;min-width:36px;text-align:right;}
+.sec-lbl{font-size:11px;font-weight:500;color:#888;letter-spacing:.07em;text-transform:uppercase;margin:1rem 0 .4rem;}
+.pitem{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:8px;border:1px solid #e0e0e0;background:white;margin-bottom:7px;}
+.pitem.warn-item{border-color:#BA7517;}
+.pitem.done{opacity:.55;}
+.pitem.done .pname{text-decoration:line-through;color:#888;}
+.pitem.hero-item{border-color:#7F77DD;background:#EEEDFE;}
+.pitem.ot-item{border-color:#B06CC4;}
+.chk{width:20px;height:20px;border-radius:50%;border:1.5px solid #ccc;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;cursor:pointer;transition:all .2s;}
+.chk.on{background:#1D9E75;border-color:#1D9E75;color:white;}
+.pbody{flex:1;}
+.pname{font-size:14px;font-weight:500;color:#222;}
+.pmeta{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;}
+.ptim{font-size:11px;color:#888;}
+.tag{font-size:11px;padding:1px 7px;border-radius:99px;}
+.tag-def{background:#EAF3FB;color:#185FA5;}
+.tag-warn{background:#FAEEDA;color:#854F0B;border:1px solid #BA7517;}
+.tag-hero{background:#EEEDFE;color:#534AB7;}
+.tag-exam{background:#EEEDFE;color:#3C3489;}
+.clicktag{font-size:11px;padding:1px 7px;border-radius:99px;cursor:pointer;border:1px solid;}
+.ct-purple{background:#F5EDFB;color:#7B2D9E;border-color:#C487DC;}
+.ct-green{background:#E1F5EE;color:#085041;border-color:#1D9E75;}
+.ct-blue{background:#E6F1FB;color:#185FA5;border-color:#85B7EB;}
+.ct-amber{background:#FAEEDA;color:#633806;border-color:#EF9F27;}
+.ct-morado{background:#EEEDFE;color:#3C3489;border-color:#AFA9EC;}
+.ct-gtag{background:#EAF3DE;color:#27500A;border-color:#97C459;}
+.gbox{display:none;margin-top:8px;padding:8px 10px;background:#f5f5f5;border-left:2px solid #1D9E75;font-size:12px;color:#555;line-height:1.6;}
+.gbox.open{display:block;}
+.mbox{display:none;margin-top:10px;padding:10px 12px;border-radius:8px;border:1px solid;}
+.mbox.open{display:block;}
+.mbox.purple{background:#F5EDFB;border-color:#C487DC;}
+.mbox.verde{background:#E1F5EE;border-color:#1D9E75;}
+.mbox.azul{background:#E6F1FB;border-color:#85B7EB;}
+.mbox.amber{background:#FAEEDA;border-color:#EF9F27;}
+.mbox.morado{background:#EEEDFE;border-color:#AFA9EC;}
+.mbox.green{background:#EAF3DE;border-color:#97C459;}
+.mbox-title{font-size:12px;font-weight:500;margin-bottom:8px;}
+.mbox-title.purple{color:#7B2D9E;}
+.mbox-title.verde{color:#085041;}
+.mbox-title.azul{color:#0C447C;}
+.mbox-title.amber{color:#633806;}
+.mbox-title.morado{color:#3C3489;}
+.mbox-title.green{color:#27500A;}
+.mbtns{display:flex;gap:6px;flex-wrap:wrap;flex-direction:column;}
+.alink{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;font-size:12px;text-decoration:none;transition:all .15s;border:1px solid;}
+.al-purple{border-color:#B06CC4;background:white;color:#7B2D9E;}
+.al-purple:hover{background:#B06CC4;color:white;}
+.al-green{border-color:#3B6D11;background:white;color:#27500A;}
+.al-green:hover{background:#639922;color:white;}
+.al-blue{border-color:#185FA5;background:white;color:#0C447C;}
+.al-blue:hover{background:#185FA5;color:white;}
+.al-amber{border-color:#633806;background:white;color:#633806;}
+.al-amber:hover{background:#EF9F27;color:white;}
+.al-spotify{border-color:#1D9E75;background:white;color:#0F6E56;}
+.al-spotify:hover{background:#1D9E75;color:white;}
+.al-yt{border-color:#BA7517;background:white;color:#854F0B;}
+.al-yt:hover{background:#BA7517;color:white;}
+.al-morado{border-color:#534AB7;background:white;color:#3C3489;}
+.al-morado:hover{background:#534AB7;color:white;}
+.al-cronica{border-color:#8B4513;background:white;color:#6B3410;}
+.al-cronica:hover{background:#A0522D;color:white;}
+.misterio{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 10px;border-radius:99px;margin-bottom:8px;}
+.mnote{font-size:11px;color:#888;margin-top:8px;}
+.acordaos-toggle{cursor:pointer;font-size:11px;color:#BA7517;}
+.acordaos-box{display:none;margin-top:8px;padding:10px;background:#EEEDFE;border-radius:8px;border:1px solid #AFA9EC;font-size:12px;color:#3C3489;line-height:1.8;font-style:italic;}
+.acordaos-box.open{display:block;}
+.conflict-note{font-size:11px;color:#854F0B;display:flex;align-items:center;gap:4px;margin-bottom:.6rem;padding:5px 8px;background:#FAEEDA;border-radius:8px;border:1px solid #EF9F27;}
+.congrats{display:none;text-align:center;padding:1rem;background:#E1F5EE;border-radius:12px;margin-top:.8rem;}
+.congrats.show{display:block;}
+.reset-btn{font-size:12px;color:#888;background:none;border:none;cursor:pointer;margin-top:.8rem;}
+.modal-bg{display:none;background:rgba(0,0,0,0.15);border-radius:12px;padding:1rem;margin-top:1rem;}
+.modal-bg.open{display:block;}
+.modal-inner{background:white;border-radius:12px;border:1px solid #e0e0e0;padding:1.2rem 1.4rem;}
+.edots{display:flex;gap:5px;margin-bottom:1rem;}
+.edot{width:7px;height:7px;border-radius:50%;background:#e0e0e0;border:1px solid #ccc;}
+.edot.done{background:#1D9E75;border-color:#1D9E75;}
+.edot.cur{background:#5DCAA5;border-color:#1D9E75;}
+.eq{font-size:14px;font-weight:500;color:#222;margin-bottom:.8rem;}
+.ebtn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:.8rem;}
+.ebtn{font-size:13px;padding:6px 14px;border-radius:8px;border:1px solid #ccc;background:white;color:#222;cursor:pointer;}
+.ebtn.pri{background:#1D9E75;color:white;border-color:#1D9E75;}
+.scale-row{display:flex;gap:7px;margin:.6rem 0;}
+.sbtn{width:38px;height:38px;border-radius:8px;border:1px solid #ccc;background:white;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#222;}
+.sbtn.sel{background:#1D9E75;color:white;border-color:#1D9E75;}
+.nrow{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0;}
+.nrow:last-child{border-bottom:none;}
+.nname{flex:1;font-size:13px;color:#222;}
+.mbtns2{display:flex;gap:5px;}
+.mbtn2{font-size:11px;padding:2px 9px;border-radius:99px;border:1px solid #ccc;background:white;cursor:pointer;color:#888;}
+.mbtn2.ok{background:#E1F5EE;color:#0F6E56;border-color:#1D9E75;}
+.mbtn2.fail{background:#FCEBEB;color:#A32D2D;border-color:#E24B4A;}
+.ecard{background:#f5f5f5;border-radius:8px;padding:.8rem 1rem;margin-bottom:.7rem;}
+.ecard-lbl{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.ev-row{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid #eee;}
+.ev-row:last-child{border-bottom:none;}
+.ev-dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;margin-top:4px;flex-shrink:0;}
+.ev-name{font-size:13px;font-weight:500;color:#222;}
+.ev-time{font-size:11px;color:#888;}
+.pplan-row{display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px solid #eee;}
+.pplan-row:last-child{border-bottom:none;}
+.pplan-time{font-size:12px;color:#1D9E75;font-weight:500;min-width:90px;}
+.pplan-name{font-size:13px;color:#222;}
+.warn-dot2{width:7px;height:7px;border-radius:50%;background:#BA7517;margin-top:4px;flex-shrink:0;}
+.nd-dot{width:7px;height:7px;flex-shrink:0;}
+.etarea{width:100%;padding:8px;border-radius:8px;border:1px solid #ccc;font-family:system-ui,sans-serif;font-size:13px;color:#222;resize:vertical;min-height:70px;margin-top:.4rem;}
+.sum-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;border-bottom:1px solid #eee;}
+.sum-row:last-child{border-bottom:none;}
+.tg-g{font-size:11px;padding:2px 8px;border-radius:99px;background:#E1F5EE;color:#0F6E56;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="day-tabs" id="dtabs"></div>
+<div class="hero-banner">
+  <div>
+    <div class="hero-label">⏰ Minuto heroico</div>
+    <div class="hero-time" id="hero-time">06:43</div>
+    <div class="hero-sub">De un salto, sin miramientos</div>
+  </div>
+  <div class="bed-pill">
+    <div>
+      <div class="bed-label">🌙 Acostarse</div>
+      <div class="bed-time" id="bed-time">22:43</div>
+    </div>
+  </div>
+</div>
+<div class="prog-row">
+  <div class="prog-bg"><div class="prog-fill" id="pfill" style="width:0%"></div></div>
+  <span class="prog-lbl" id="plbl">0/0</span>
+</div>
+<div id="dcontent"></div>
+<div id="exam-modal" class="modal-bg"><div class="modal-inner" id="exam-inner"></div></div>
+<div style="text-align:right;"><button class="reset-btn" onclick="resetDay()">↺ Reiniciar día</button></div>
+</div>
+
+<script>
+const U={
+  spotify:'https://open.spotify.com/playlist/7fJ6woHuvic5GwxayvW8QB',
+  ytmusica:'https://www.youtube.com/watch?v=J_tGhtJYwxs',
+  yt10min:'https://www.youtube.com/playlist?list=PLsZttjEgez26FgDqCO_s3tmqeKq7PmIkr',
+  meditacion:'https://opusdei.org/es-es/meditation/',
+  estampa:'https://www.youtube.com/watch?v=ZobZuWvEfzA',
+  despuesmisa:'https://opusdei.org/es/prayers/section/?section1=27&section2=37',
+  opusdeiyt:'https://www.youtube.com/@PrelatureofOpusDei/videos',
+  ohsenora:'https://opusdei.org/es/prayers/section/?section1=25&section2=35#dm-prayer-148',
+  itheca:'https://play.google.com/store/apps/details?id=org.itheca.android',
+  cronica:'https://cronicadigital.org/es/category/2026-es/mayo-2026-es/',
+  prelado:'https://opusdei.org/es/section/messages-from-the-prelate/',
+  friendsofgod:'https://www.youtube.com/playlist?list=PLLaXSTFKsZt2Athe_8hcneCH2fCUx0a',
+  escriva:'https://www.escriva.org/es/',
+  horariosdemisa:'https://play.google.com/store/apps/details?id=com.itsharedservices.hdsmyc.app',
+  whatsapp:'https://wa.me/34608467814',
+};
+const M={
+  lun:{n:'Misterios Gozosos',bg:'#E1F5EE',c:'#085041',bc:'#9FE1CB'},
+  mar:{n:'Misterios Dolorosos',bg:'#FCEBEB',c:'#A32D2D',bc:'#F7C1C1'},
+  mie:{n:'Misterios Gloriosos',bg:'#EEEDFE',c:'#3C3489',bc:'#AFA9EC'},
+  jue:{n:'Misterios Luminosos',bg:'#FAEEDA',c:'#854F0B',bc:'#FAC775'},
+  vie:{n:'Misterios Dolorosos',bg:'#FCEBEB',c:'#A32D2D',bc:'#F7C1C1'},
+};
+const ACORDAOS='Acordaos, oh piadosísima Virgen María, que jamás se ha oído decir que ninguno de los que han acudido a vuestra protección, implorando vuestra asistencia y reclamando vuestro socorro, haya sido abandonado de vos.\n\nAnimado con esta confianza, a vos también acudo, oh Madre, Virgen de vírgenes; y, aunque gimiendo bajo el peso de mis pecados, me atrevo a aparecer ante vuestra presencia soberana.\n\nNo desechéis, oh Madre de Dios, mis humildes súplicas, antes bien escuchadlas y atendedlas favorablemente. Amén.';
+
+const DAYS=[
+  {key:'lun',label:'Lun 11',warn:true,wakeTime:'06:43',bedTime:'22:43',nextLabel:'Mar 12',nextWake:'06:43',nextBed:'22:43',
+   nextEvents:[{n:'Reunión planificación',t:'09:00–09:30'},{n:'Federación de empresarios',t:'10:00–10:30'}],
+   secs:[
+    {lbl:'Amanecer',items:[
+      {id:'mh',n:'Minuto heroico',t:'06:43',tag:'¡ahora!',hero:true,g:'Levántate de un salto. Sin negociar.'},
+      {id:'oo',n:'Ofrecimiento de obras',t:'06:44',tag:'1 min',ofs:true,g:'"Señor, te ofrezco todo lo que voy a vivir hoy."'},
+      {id:'ar',n:'Arreglarse y desayunar',t:'06:45–07:15',tag:'30 min',g:'Con calma.'},
+      {id:'om',n:'Oración de la mañana',t:'07:15–07:45',tag:'30 min',om:true,g:'10 min + meditación + estampa.'},
+      {id:'dp1',n:'Desplazamiento a la iglesia',t:'07:45–08:00',tag:'15 min',iglesia:true,g:'Llega con recogimiento.'},
+      {id:'mi',n:'Misa',t:'08:00–08:20',tag:'20 min',misa:true,g:'Sigue la misa del día con ITHECA.'},
+      {id:'ag',n:'Acción de gracias post-misa',t:'08:20–08:30',tag:'10 min',ag:true,g:'Devocionario + Acordaos.'},
+      {id:'dp2',n:'Desplazamiento al trabajo',t:'08:30–08:45',tag:'15 min',g:'15 min antes de las 9:00.'},
+    ]},
+    {lbl:'Durante el día',items:[
+      {id:'an1',n:'Ángelus de mediodía',t:'12:00',tag:'5 min',g:'Pausa breve.'},
+      {id:'lec',n:'Lectura espiritual',t:'13:00–13:15',tag:'15 min',g:'Lee despacio.'},
+      {id:'ros',n:'Rosario',t:'13:15–13:35',tag:'20 min',w:true,ros:true,g:'Misterios Gozosos.'},
+      {id:'vis',n:'Visita al Santísimo',t:'17:15–17:30',tag:'10 min',w:true,g:'Tras la reunión de Odoo.'},
+      {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'Antes de cada reunión: "Señor, esto lo hago por ti."'},
+    ]},
+    {lbl:'Tarde / Noche',items:[
+      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al cerrar la jornada.'},
+      {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
+      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Repasa el día con gratitud.'},
+      {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno.'},
+    ]},
+  ]},
+  {key:'mar',label:'Mar 12',warn:false,wakeTime:'06:43',bedTime:'22:43',nextLabel:'Mié 13',nextWake:'07:43',nextBed:'23:43',
+   nextEvents:[{n:'Honda Trading',t:'15:30–16:30'},{n:'Odoo GO LIVE',t:'15:30–17:00'}],
+   secs:[
+    {lbl:'Amanecer',items:[
+      {id:'mh',n:'Minuto heroico',t:'06:43',tag:'¡ahora!',hero:true,g:'De un salto.'},
+      {id:'oo',n:'Ofrecimiento de obras',t:'06:44',tag:'1 min',ofs:true,g:'"Señor, te ofrezco la planificación y la Federación."'},
+      {id:'ar',n:'Arreglarse y desayunar',t:'06:45–07:15',tag:'30 min',g:'Con calma.'},
+      {id:'om',n:'Oración de la mañana',t:'07:15–07:45',tag:'30 min',om:true,g:'10 min + meditación + estampa.'},
+      {id:'dp1',n:'Desplazamiento a la iglesia',t:'07:45–08:00',tag:'15 min',iglesia:true,g:'El camino es parte de la preparación.'},
+      {id:'mi',n:'Misa',t:'08:00–08:20',tag:'20 min',misa:true,g:'Misa del martes 12 con ITHECA.'},
+      {id:'ag',n:'Acción de gracias post-misa',t:'08:20–08:30',tag:'10 min',ag:true,g:'Devocionario + Acordaos.'},
+      {id:'dp2',n:'Desplazamiento al trabajo',t:'08:30–08:45',tag:'15 min',g:'15 min antes de las 9:00.'},
+    ]},
+    {lbl:'Durante el día',items:[
+      {id:'an1',n:'Ángelus de mediodía',t:'12:00',tag:'5 min',g:'Pausa.'},
+      {id:'lec',n:'Lectura espiritual',t:'13:00–13:15',tag:'15 min',g:'Tarde despejada.'},
+      {id:'ros',n:'Rosario',t:'15:00–15:20',tag:'20 min',ros:true,g:'Misterios Dolorosos.'},
+      {id:'vis',n:'Visita al Santísimo',t:'16:00–16:15',tag:'10 min',g:'Tarde libre.'},
+      {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'Ofrece las reuniones antes de entrar.'},
+    ]},
+    {lbl:'Tarde / Noche',items:[
+      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al cerrar.'},
+      {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
+      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Aprovecha para profundizar.'},
+      {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno.'},
+    ]},
+  ]},
+  {key:'mie',label:'Mié 13',warn:true,wakeTime:'07:43',bedTime:'23:43',nextLabel:'Jue 14',nextWake:'06:43',nextBed:'22:43',
+   nextEvents:[{n:'Reunión planificación',t:'09:00–09:30'}],
+   secs:[
+    {lbl:'Amanecer (mañana libre)',items:[
+      {id:'mh',n:'Minuto heroico',t:'07:43',tag:'¡ahora!',hero:true,g:'Hoy más tarde, pero de un salto.'},
+      {id:'oo',n:'Ofrecimiento de obras',t:'07:44',tag:'1 min',ofs:true,g:'"Dame serenidad para el GO LIVE."'},
+      {id:'ar',n:'Arreglarse y desayunar',t:'07:45–08:15',tag:'30 min',g:'Con más calma que otros días.'},
+      {id:'om',n:'Oración de la mañana',t:'08:15–08:45',tag:'30 min',om:true,g:'El mejor día para la oración. 10 min + meditación + estampa.'},
+      {id:'dp1',n:'Desplazamiento a la iglesia',t:'08:45–09:00',tag:'15 min',iglesia:true,g:'Sin prisas.'},
+      {id:'mi',n:'Misa',t:'09:00–09:20',tag:'20 min',misa:true,g:'Misa del miércoles 13 con ITHECA.'},
+      {id:'ag',n:'Acción de gracias post-misa',t:'09:20–09:30',tag:'10 min',ag:true,g:'Devocionario + Acordaos.'},
+    ]},
+    {lbl:'Durante el día',items:[
+      {id:'an1',n:'Ángelus de mediodía',t:'12:00',tag:'5 min',g:'Pausa.'},
+      {id:'lec',n:'Lectura espiritual',t:'13:00–13:15',tag:'15 min',g:'Antes de las reuniones.'},
+      {id:'ros',n:'Rosario',t:'13:30–13:50',tag:'20 min',w:true,ros:true,g:'Misterios Gloriosos. Termina antes de las 15:30.'},
+      {id:'vis',n:'Visita al Santísimo',t:'17:15–17:30',tag:'10 min',w:true,g:'Tras Honda y Odoo.'},
+      {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'Ofrece el GO LIVE antes de empezar.'},
+    ]},
+    {lbl:'Tarde / Noche',items:[
+      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al acabar.'},
+      {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
+      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Repasa Honda y el GO LIVE con gratitud.'},
+      {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno.'},
+    ]},
+  ]},
+  {key:'jue',label:'Jue 14',warn:false,wakeTime:'06:43',bedTime:'22:43',nextLabel:'Vie 15',nextWake:'06:43',nextBed:'22:43',
+   nextEvents:[{n:'Reunión planificación',t:'09:00–09:30'},{n:'Reunión export',t:'12:00–13:00'},{n:'Reunión design',t:'13:00–14:00'},{n:'Seguimiento Bexiflon',t:'15:10–15:40'}],
+   secs:[
+    {lbl:'Amanecer',items:[
+      {id:'mh',n:'Minuto heroico',t:'06:43',tag:'¡ahora!',hero:true,g:'De un salto.'},
+      {id:'oo',n:'Ofrecimiento de obras',t:'06:44',tag:'1 min',ofs:true,g:'"Señor, te ofrezco este jueves."'},
+      {id:'ar',n:'Arreglarse y desayunar',t:'06:45–07:15',tag:'30 min',g:'La tarde es libre.'},
+      {id:'om',n:'Oración de la mañana',t:'07:15–07:45',tag:'30 min',om:true,g:'10 min + meditación + estampa.'},
+      {id:'dp1',n:'Desplazamiento a la iglesia',t:'07:45–08:00',tag:'15 min',iglesia:true,g:'Recogimiento.'},
+      {id:'mi',n:'Misa',t:'08:00–08:20',tag:'20 min',misa:true,g:'Misa del jueves 14 con ITHECA.'},
+      {id:'ag',n:'Acción de gracias post-misa',t:'08:20–08:30',tag:'10 min',ag:true,g:'Devocionario + Acordaos.'},
+      {id:'dp2',n:'Desplazamiento al trabajo',t:'08:30–08:45',tag:'15 min',g:'15 min antes de las 9:00.'},
+    ]},
+    {lbl:'Durante el día',items:[
+      {id:'an1',n:'Ángelus de mediodía',t:'12:00',tag:'5 min',g:'Pausa.'},
+      {id:'lec',n:'Lectura espiritual',t:'13:00–13:15',tag:'15 min',g:'Tarde despejada.'},
+      {id:'ros',n:'Rosario',t:'15:30–15:50',tag:'20 min',ros:true,g:'Misterios Luminosos.'},
+      {id:'vis',n:'Visita al Santísimo',t:'16:30–16:45',tag:'10 min',g:'Salida breve.'},
+      {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'Ofrece cada reunión.'},
+    ]},
+    {lbl:'Tarde / Noche',items:[
+      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al cerrar.'},
+      {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
+      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Día tranquilo: profundiza.'},
+      {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno.'},
+    ]},
+  ]},
+  {key:'vie',label:'Vie 15',warn:true,wakeTime:'06:43',bedTime:'22:43',nextLabel:'Fin de semana',nextWake:'–',nextBed:'–',
+   nextEvents:[],
+   secs:[
+    {lbl:'Amanecer',items:[
+      {id:'mh',n:'Minuto heroico',t:'06:43',tag:'¡ahora!',hero:true,g:'El viernes más cargado. Ese primer salto es más importante que nunca.'},
+      {id:'oo',n:'Ofrecimiento de obras',t:'06:44',tag:'1 min',ofs:true,g:'"Dame claridad para las 4 reuniones de hoy."'},
+      {id:'ar',n:'Arreglarse y desayunar',t:'06:45–07:15',tag:'30 min',g:'El desayuno bien hecho da fuerza.'},
+      {id:'om',n:'Oración de la mañana',t:'07:15–07:45',tag:'30 min',om:true,g:'Hoy más que nunca: 10 min + meditación + estampa.'},
+      {id:'dp1',n:'Desplazamiento a la iglesia',t:'07:45–08:00',tag:'15 min',iglesia:true,g:'La misa es el punto de apoyo del día.'},
+      {id:'mi',n:'Misa',t:'08:00–08:20',tag:'20 min',misa:true,w:true,g:'No lo dejes para luego. ITHECA.'},
+      {id:'ag',n:'Acción de gracias post-misa',t:'08:20–08:30',tag:'10 min',ag:true,g:'Devocionario + Acordaos.'},
+      {id:'dp2',n:'Desplazamiento al trabajo',t:'08:30–08:45',tag:'15 min',g:'15 min antes de las 9:00.'},
+    ]},
+    {lbl:'Durante el día',items:[
+      {id:'an1',n:'Ángelus de mediodía',t:'11:50',tag:'5 min',g:'Antes de la Reunión export.'},
+      {id:'lec',n:'Lectura espiritual',t:'14:15–14:30',tag:'15 min',w:true,g:'Único hueco entre design y Bexiflon.'},
+      {id:'ros',n:'Rosario',t:'16:00–16:20',tag:'20 min',ros:true,g:'Misterios Dolorosos.'},
+      {id:'vis',n:'Visita al Santísimo',t:'16:30–16:45',tag:'10 min',w:true,g:'Encadena con el rosario.'},
+      {id:'tra',n:'Santificación del trabajo',t:'Todo el día',tag:'continuo',g:'Ofrece cada reunión antes de entrar.'},
+    ]},
+    {lbl:'Tarde / Noche',items:[
+      {id:'an2',n:'Ángelus de la tarde',t:'19:00',tag:'5 min',g:'Al cerrar el viernes.'},
+      {id:'ot',n:'Oración de la tarde',t:'19:30–20:00',tag:'30 min',ot:true,g:'Elige el recurso que más te inspire hoy.'},
+      {id:'on',n:'Oración mental nocturna',t:'21:30–22:00',tag:'30 min',g:'Repasa la semana entera con gratitud.'},
+      {id:'ex',n:'Examen de conciencia',t:'22:15',tag:'10 min',exam:true,g:'Al marcar se abrirá el asistente nocturno.'},
+    ]},
+  ]},
+];
+
+const NORMAS=['Minuto heroico','Ofrecimiento de obras','Oración de la mañana','Misa','Acción de gracias','Ángelus mediodía','Lectura espiritual','Rosario','Visita al Santísimo','Santificación','Ángelus tarde','Oración de la tarde','Oración nocturna'];
+
+let curDay=0,state={},exam={step:0,normas:{},nota:3,prop:'',sent:''},examOpen=false;
+function sk(k,id){return k+'_'+id;}
+function load(){try{const s=localStorage.getItem('pv9');if(s)state=JSON.parse(s);}catch(e){}}
+function save(){try{localStorage.setItem('pv9',JSON.stringify(state));}catch(e){}}
+function prog(di){const d=DAYS[di];let t=0,n=0;d.secs.forEach(s=>s.items.forEach(it=>{t++;if(state[sk(d.key,it.id)])n++;}));return{t,n};}
+
+function renderTabs(){
+  const c=document.getElementById('dtabs');c.innerHTML='';
+  DAYS.forEach((d,i)=>{
+    const{n,t}=prog(i);
+    const b=document.createElement('button');
+    b.className='day-tab'+(i===curDay?' active':'')+(d.warn?' warn':'');
+    b.textContent=d.label+(n===t?' ✓':'');
+    b.onclick=()=>{curDay=i;examOpen=false;exam={step:0,normas:{},nota:3,prop:'',sent:''};renderAll();};
+    c.appendChild(b);
+  });
+}
+
+function renderContent(){
+  const day=DAYS[curDay];
+  document.getElementById('hero-time').textContent=day.wakeTime;
+  document.getElementById('bed-time').textContent=day.bedTime;
+  const c=document.getElementById('dcontent');c.innerHTML='';
+  const{n,t}=prog(curDay);
+  document.getElementById('pfill').style.width=Math.round((n/t)*100)+'%';
+  document.getElementById('plbl').textContent=n+'/'+t;
+
+  if(day.secs.some(s=>s.items.some(it=>it.w))){
+    const note=document.createElement('div');note.className='conflict-note';
+    note.textContent='⚠️ Algunas prácticas requieren ajuste. Toca ℹ para ver el consejo.';
+    c.appendChild(note);
+  }
+
+  day.secs.forEach(sec=>{
+    const sl=document.createElement('div');sl.className='sec-lbl';sl.textContent=sec.lbl;c.appendChild(sl);
+    sec.items.forEach(item=>{
+      const key=sk(day.key,item.id);
+      const isDone=!!state[key];
+      const m=M[day.key]||{n:'Misterios del día',bg:'#E1F5EE',c:'#085041',bc:'#9FE1CB'};
+
+      const div=document.createElement('div');
+      div.className='pitem'+(isDone?' done':'')+(item.w?' warn-item':'')+(item.hero?' hero-item':'')+(item.ot?' ot-item':'')+(item.exam?' '+'':'');
+
+      let tags='';
+      if(item.ofs) tags+=`<span class="clicktag ct-morado" data-t="of-${day.key}-${item.id}">🙏 Oh Señora mía</span>`;
+      if(item.iglesia) tags+=`<span class="clicktag ct-amber" data-t="igl-${day.key}-${item.id}">⛪ Horarios de Misa</span>`;
+      if(item.misa) tags+=`<span class="clicktag ct-gtag" data-t="mi-${day.key}-${item.id}">📱 ITHECA</span>`;
+      if(item.ros) tags+=`<span class="clicktag ct-green" data-t="ros-${day.key}-${item.id}">📿 rosario</span>`;
+      if(item.om) tags+=`<span class="clicktag ct-blue" data-t="ora-${day.key}-${item.id}">▶️ oración</span>`;
+      if(item.ag) tags+=`<span class="clicktag ct-amber" data-t="gra-${day.key}-${item.id}">📖 devocionario</span>`;
+      if(item.ot) tags+=`<span class="clicktag ct-purple" data-t="ot-${day.key}-${item.id}">📚 recursos</span>`;
+      if(item.exam) tags+=`<span class="tag tag-exam">🌙 abre asistente</span>`;
+
+      let boxes='';
+      if(item.iglesia) boxes+=`<div class="mbox amber" id="igl-${day.key}-${item.id}"><div class="mbox-title amber">⛪ Buscar misa cercana</div><div class="mbtns"><a class="alink al-amber" href="${U.horariosdemisa}" target="_blank">📍 Abrir Horarios de Misa</a></div><div class="mnote">Busca la iglesia más cercana y el horario que mejor te venga.</div></div>`;
+      if(item.ofs) boxes+=`<div class="mbox morado" id="of-${day.key}-${item.id}"><div class="mbox-title morado">Oh Señora mía — devocionario</div><div class="mbtns"><a class="alink al-morado" href="${U.ohsenora}" target="_blank">↗ Abrir en el devocionario</a></div></div>`;
+      if(item.misa) boxes+=`<div class="mbox green" id="mi-${day.key}-${item.id}"><div class="mbox-title green">Seguir la misa con ITHECA</div><div class="mbtns"><a class="alink al-green" href="${U.itheca}" target="_blank">↗ Abrir ITHECA en Google Play</a></div><div class="mnote">Abre la app antes de entrar a la iglesia.</div></div>`;
+      if(item.ros) boxes+=`<div class="mbox verde" id="ros-${day.key}-${item.id}"><div class="misterio" style="background:${m.bg};color:${m.c};border:1px solid ${m.bc};">📿 ${m.n}</div><div class="mbox-title verde">Abrir en dos pestañas:</div><div class="mbtns"><a class="alink al-spotify" href="${U.spotify}" target="_blank">▶️ Santo Rosario Opus Dei</a><a class="alink al-yt" href="${U.ytmusica}" target="_blank">🎵 Música de fondo</a></div><div class="mnote">Música a volumen bajo (20–30%), rosario al 100%.</div></div>`;
+      if(item.om) boxes+=`<div class="mbox azul" id="ora-${day.key}-${item.id}"><div class="mbox-title azul">Oración de la mañana — 30 minutos</div><div class="mbtns"><a class="alink al-blue" href="${U.yt10min}" target="_blank">▶️ 10 min con Jesús — episodio de hoy</a><a class="alink al-morado" href="${U.meditacion}" target="_blank">📖 Meditación del día — opusdei.org</a><a class="alink al-amber" href="${U.estampa}" target="_blank">▶️ Estampa de San Josemaría</a></div><div class="mnote">10 min + 15 min + 5 min = 30 min exactos</div></div>`;
+      if(item.ag) boxes+=`<div class="mbox amber" id="gra-${day.key}-${item.id}"><div class="mbox-title amber">Acción de gracias — 10 minutos</div><div class="mbtns"><a class="alink al-amber" href="${U.despuesmisa}" target="_blank">📖 Después de Misa — devocionario</a></div><div style="margin-top:10px;"><div style="font-size:11px;font-weight:500;color:#633806;display:flex;justify-content:space-between;"><span>📿 Acordaos</span><span class="acordaos-toggle" data-ac="ac-${day.key}-${item.id}">ver texto</span></div><div class="acordaos-box" id="ac-${day.key}-${item.id}">${ACORDAOS.replace(/\n\n/g,'<br><br>')}</div></div></div>`;
+      if(item.ot) boxes+=`<div class="mbox purple" id="ot-${day.key}-${item.id}"><div class="mbox-title purple">📚 Recursos para la oración de la tarde</div><div class="mbtns"><a class="alink al-cronica" href="${U.cronica}" target="_blank">📰 Crónica digital — mayo 2026</a><a class="alink al-amber" href="${U.prelado}" target="_blank">✉️ Mensajes del Prelado</a><a class="alink al-purple" href="${U.escriva}" target="_blank">📖 Escrivá.org — obras completas</a><a class="alink al-blue" href="${U.friendsofgod}" target="_blank">▶️ Homilías San Josemaría — Friends of God</a><a class="alink al-blue" href="${U.opusdeiyt}" target="_blank">📺 Canal Opus Dei YouTube</a><a class="alink al-green" href="${U.whatsapp}" target="_blank">💬 Oficina de comunicación Opus Dei España</a></div><div class="mnote">Elige el recurso que más te inspire hoy. 30 minutos.</div></div>`;
+
+      div.innerHTML=`
+        <div class="chk ${isDone?'on':''}" data-key="${key}">${isDone?'✓':''}</div>
+        <div class="pbody">
+          <div style="display:flex;justify-content:space-between;">
+            <span class="pname">${item.n}</span>
+            <span class="clicktag ct-blue" style="font-size:11px;" data-g="g-${day.key}-${item.id}">ℹ</span>
+          </div>
+          <div class="pmeta">
+            <span class="ptim">⏱ ${item.t}</span>
+            <span class="tag ${item.hero?'tag-hero':item.exam?'tag-exam':item.w?'tag-warn':'tag-def'}">${item.tag}</span>
+            ${tags}
+          </div>
+          <div class="gbox" id="g-${day.key}-${item.id}">${item.g}</div>
+          ${boxes}
+        </div>
+      `;
+
+      div.querySelector('.chk').addEventListener('click',()=>{
+        const was=!!state[key];state[key]=!was;save();
+        if(!was&&item.exam){examOpen=true;exam={step:0,normas:{},nota:3,prop:'',sent:''};}
+        renderAll();
+        if(!was&&item.exam)document.getElementById('exam-modal').scrollIntoView({behavior:'smooth',block:'start'});
+      });
+      div.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',(e)=>{e.stopPropagation();document.getElementById(b.dataset.g).classList.toggle('open');}));
+      div.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',(e)=>{e.stopPropagation();document.getElementById(b.dataset.t).classList.toggle('open');}));
+      div.querySelectorAll('.acordaos-toggle').forEach(b=>b.addEventListener('click',(e)=>{e.stopPropagation();document.getElementById(b.dataset.ac).classList.toggle('open');}));
+      c.appendChild(div);
+    });
+  });
+
+  const{n:n2,t:t2}=prog(curDay);
+  if(n2===t2){const cg=document.createElement('div');cg.className='congrats show';cg.innerHTML='<div style="font-size:15px;font-weight:500;color:#0F6E56;">¡Plan de vida completo! ✓</div><div style="font-size:12px;color:#1D9E75;margin-top:3px;">Has santificado el día.</div>';c.appendChild(cg);}
+}
+
+function renderExam(){
+  const modal=document.getElementById('exam-modal');
+  const inner=document.getElementById('exam-inner');
+  if(!examOpen){modal.classList.remove('open');return;}
+  modal.classList.add('open');
+  const day=DAYS[curDay];
+  const ESTEPS=['intro','val','normas','prop','eventos','plan','cierre'];
+  const s=ESTEPS[exam.step];
+  inner.innerHTML='';
+  const dots=document.createElement('div');dots.className='edots';
+  ESTEPS.forEach((_,i)=>{const d=document.createElement('div');d.className='edot'+(i<exam.step?' done':i===exam.step?' cur':'');dots.appendChild(d);});
+  inner.appendChild(dots);
+
+  if(s==='intro'){
+    inner.innerHTML+=`<div style="font-size:15px;font-weight:500;margin-bottom:.8rem;">🌙 Examen de conciencia</div>
+    <div style="font-size:13px;color:#555;margin-bottom:.8rem;">Tómate unos minutos en silencio. Pídele luz para ver el día con claridad.</div>
+    <div style="font-size:13px;color:#888;font-style:italic;margin-bottom:.8rem;">"Examina cada noche tu conducta del día que termina." — Camino, 238</div>
+    <div class="ebtn-row"><button class="ebtn pri" onclick="eNext()">Comenzar →</button></div>`;
+  } else if(s==='val'){
+    inner.innerHTML+=`<div class="eq">¿Cómo ha sido el día?</div>`;
+    const sr=document.createElement('div');sr.className='scale-row';
+    for(let i=1;i<=5;i++){const b=document.createElement('button');b.className='sbtn'+(exam.nota===i?' sel':'');b.textContent=i;b.onclick=()=>{exam.nota=i;renderExam();};sr.appendChild(b);}
+    inner.appendChild(sr);
+    inner.innerHTML+=`<div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:.8rem;"><span>Muy difícil</span><span>Muy bien</span></div>
+    <label style="font-size:13px;color:#555;">¿Algo que destacar?</label>
+    <textarea class="etarea" id="sent-txt" placeholder="Opcional...">${exam.sent}</textarea>
+    <div class="ebtn-row"><button class="ebtn" onclick="ePrev()">←</button><button class="ebtn pri" onclick="saveSent();eNext()">Continuar →</button></div>`;
+  } else if(s==='normas'){
+    inner.innerHTML+=`<div class="eq">Repasa las normas de hoy:</div><div id="nlist"></div>
+    <div class="ebtn-row"><button class="ebtn" onclick="ePrev()">←</button><button class="ebtn pri" onclick="eNext()">Continuar →</button></div>`;
+    const nl=document.getElementById('nlist');
+    NORMAS.forEach((n,i)=>{const r=document.createElement('div');r.className='nrow';const st=exam.normas[i];r.innerHTML=`<span class="nname">${n}</span><div class="mbtns2"><button class="mbtn2 ${st==='ok'?'ok':''}" onclick="setN(${i},'ok')">✓</button><button class="mbtn2 ${st==='fail'?'fail':''}" onclick="setN(${i},'fail')">✗</button></div>`;nl.appendChild(r);});
+  } else if(s==='prop'){
+    const failed=NORMAS.filter((_,i)=>exam.normas[i]==='fail');
+    inner.innerHTML+=`<div class="eq">Propósito de mejora para mañana</div>
+    ${failed.length?`<div class="ecard"><div class="ecard-lbl">Normas no cumplidas</div>${failed.map(n=>`<div style="font-size:13px;color:#A32D2D;padding:2px 0;">• ${n}</div>`).join('')}</div>`:`<div style="font-size:13px;color:#1D9E75;margin-bottom:.8rem;">✓ ¡Todas las normas cumplidas!</div>`}
+    <textarea class="etarea" id="prop-txt" placeholder="Escribe tu propósito concreto...">${exam.prop}</textarea>
+    <div class="ebtn-row"><button class="ebtn" onclick="ePrev()">←</button><button class="ebtn pri" onclick="saveProp();eNext()">Ver mañana →</button></div>`;
+  } else if(s==='eventos'){
+    inner.innerHTML+=`<div class="eq">Agenda de ${day.nextLabel}:</div>`;
+    if(day.nextEvents.length){
+      const ec=document.createElement('div');ec.className='ecard';ec.innerHTML='<div class="ecard-lbl">Reuniones</div>';
+      day.nextEvents.forEach(ev=>{const r=document.createElement('div');r.className='ev-row';r.innerHTML=`<div class="ev-dot"></div><div><div class="ev-name">${ev.n}</div><div class="ev-time">${ev.t}</div></div>`;ec.appendChild(r);});
+      inner.appendChild(ec);
+      if(day.nextWake!=='–')inner.innerHTML+=`<div class="ecard"><div class="ecard-lbl">Minuto heroico mañana</div><div style="font-size:20px;font-weight:500;color:#3C3489;">${day.nextWake}</div><div style="font-size:12px;color:#534AB7;">Acuéstate antes de las ${day.nextBed}</div></div>`;
+    } else {
+      inner.innerHTML+=`<div class="ecard"><div style="font-size:13px;color:#1D9E75;">Sin reuniones. Fin de semana.</div></div>`;
+    }
+    inner.innerHTML+=`
+      <div class="ecard" style="border:1px solid #1D9E75;background:#E1F5EE;">
+        <div class="ecard-lbl" style="color:#085041;">⛪ Iglesias cercanas para mañana</div>
+        <div style="font-size:12px;color:#085041;margin-bottom:8px;">Buscando desde tu ubicación actual...</div>
+        <div id="iglesias-loading" style="font-size:12px;color:#888;padding:4px 0;">📍 Detectando ubicación...</div>
+        <div id="iglesias-list" style="display:none;"></div>
+        <div id="iglesias-error" style="display:none;font-size:12px;color:#A32D2D;padding:4px 0;"></div>
+        <div id="map-container" style="width:100%;height:200px;border-radius:8px;margin-top:8px;display:none;"></div>
+      </div>
+    `;
+    inner.innerHTML+=`<div class="ebtn-row"><button class="ebtn" onclick="ePrev()">←</button><button class="ebtn pri" onclick="eNext()">Ver plan →</button></div>`;
+    setTimeout(()=>buscarIglesias(day.nextWake),100);
+  } else if(s==='plan'){
+    inner.innerHTML+=`<div class="eq">Plan para ${day.nextLabel}:</div><div class="ecard" id="planlist"></div>
+    ${exam.prop?`<div class="ecard"><div class="ecard-lbl">Tu propósito</div><div style="font-size:13px;">${exam.prop}</div></div>`:''}
+    <div class="ebtn-row"><button class="ebtn" onclick="ePrev()">←</button><button class="ebtn pri" onclick="eNext()">Cerrar →</button></div>`;
+    const pc=document.getElementById('planlist');
+    const nextDay=DAYS[curDay+1];
+    if(nextDay){nextDay.secs.forEach(sec=>sec.items.slice(0,3).forEach(p=>{const r=document.createElement('div');r.className='pplan-row';r.innerHTML=`<div style="display:flex;gap:5px;min-width:90px;"><div class="nd-dot"></div><span class="pplan-time">${p.t}</span></div><div class="pplan-name">${p.n}</div>`;pc.appendChild(r);}));}
+    else{pc.innerHTML='<div style="font-size:13px;color:#1D9E75;">Fin de semana — tiempo libre para la oración.</div>';}
+  } else if(s==='cierre'){
+    const dn=Object.values(exam.normas).filter(v=>v==='ok').length;
+    inner.innerHTML+=`<div style="text-align:center;padding:.5rem 0 1rem;">
+      <div style="font-size:24px;">🌙</div>
+      <div style="font-size:15px;font-weight:500;color:#0F6E56;margin-top:.5rem;">Buenas noches</div>
+      <div style="font-size:13px;color:#555;margin-top:.3rem;">Termina con un acto de contrición. Entrega el día a Dios.</div>
+    </div>
+    <div class="ecard">
+      <div class="sum-row"><span>Normas cumplidas</span><span class="tg-g">${dn} de ${NORMAS.length}</span></div>
+      <div class="sum-row"><span>Valoración del día</span><span style="font-size:13px;">${exam.nota}/5</span></div>
+      ${exam.prop?`<div class="sum-row"><span>Propósito mañana</span><span style="font-size:12px;color:#888;max-width:180px;text-align:right;">${exam.prop.substring(0,50)}${exam.prop.length>50?'...':''}</span></div>`:''}
+    </div>
+    <div style="font-size:13px;color:#888;text-align:center;font-style:italic;margin:.8rem 0;">"Que tu jornada de mañana empiece con Dios."</div>
+    <div class="ebtn-row" style="justify-content:center;"><button class="ebtn" onclick="examOpen=false;renderAll()">✗ Cerrar</button></div>`;
+  }
+}
+
+function eNext(){exam.step=Math.min(exam.step+1,6);renderExam();}
+function ePrev(){exam.step=Math.max(exam.step-1,0);renderExam();}
+function setN(i,v){exam.normas[i]=exam.normas[i]===v?undefined:v;renderExam();}
+function saveSent(){const e=document.getElementById('sent-txt');if(e)exam.sent=e.value;}
+function saveProp(){const e=document.getElementById('prop-txt');if(e)exam.prop=e.value;}
+function resetDay(){const day=DAYS[curDay];day.secs.forEach(s=>s.items.forEach(it=>{delete state[sk(day.key,it.id)];}));save();examOpen=false;exam={step:0,normas:{},nota:3,prop:'',sent:''};renderAll();}
+function renderAll(){renderTabs();renderContent();renderExam();}
+
+// Buscador de iglesias con Google Maps
+const GMAPS_KEY='AIzaSyAmK5IVXsEC6YxEeFqFTqLQRS0DtR7dPJg';
+let gmapsLoaded=false;
+
+function loadGMaps(cb){
+  if(window.google&&window.google.maps){cb();return;}
+  const s=document.createElement('script');
+  s.src=`https://maps.googleapis.com/maps/api/js?key=${GMAPS_KEY}&libraries=places`;
+  s.async=true;
+  s.defer=true;
+  s.onload=cb;
+  document.head.appendChild(s);
+}
+
+function buscarIglesias(nextWake){
+  // Calcular hora límite de misa (minuto heroico - 45 min de desplazamiento+misa)
+  let horaLimite='08:00';
+  if(nextWake&&nextWake!=='–'){
+    const [h,m]=nextWake.split(':').map(Number);
+    // Misa debe terminar 45 min antes del minuto heroico para llegar a tiempo
+    // En realidad el minuto heroico ES la hora de levantarse, la misa va después
+    // Misa empieza: wake + 30min arreglo + 30min oración + 15min desplazamiento
+    const misaStart=h*60+m+75;
+    const mh=Math.floor(misaStart/60);
+    const mm=misaStart%60;
+    horaLimite=`${String(mh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+  }
+
+  if(!navigator.geolocation){
+    const el=document.getElementById('iglesias-error');
+    if(el){el.style.display='block';el.textContent='Tu navegador no soporta geolocalización.';}
+    const ld=document.getElementById('iglesias-loading');
+    if(ld)ld.style.display='none';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude;
+    const lng=pos.coords.longitude;
+    loadGMaps(()=>mostrarIglesias(lat,lng,horaLimite));
+  },err=>{
+    const el=document.getElementById('iglesias-error');
+    if(el){el.style.display='block';el.textContent='No se pudo obtener tu ubicación. Asegúrate de dar permiso de localización.';}
+    const ld=document.getElementById('iglesias-loading');
+    if(ld)ld.style.display='none';
+  },{timeout:10000});
+}
+
+function mostrarIglesias(lat,lng,horaLimite){
+  const ld=document.getElementById('iglesias-loading');
+  if(ld)ld.textContent='🔍 Buscando iglesias católicas cercanas...';
+
+  const mapDiv=document.getElementById('map-container');
+  if(!mapDiv)return;
+  mapDiv.style.display='block';
+
+  const map=new google.maps.Map(mapDiv,{
+    center:{lat,lng},
+    zoom:14,
+    styles:[{featureType:'poi',elementType:'labels',stylers:[{visibility:'off'}]}],
+    mapTypeControl:false,
+    streetViewControl:false,
+  });
+
+  // Marcador posición actual
+  new google.maps.Marker({
+    position:{lat,lng},
+    map,
+    icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#1D9E75',fillOpacity:1,strokeColor:'white',strokeWeight:2},
+    title:'Tu ubicación'
+  });
+
+  const service=new google.maps.places.PlacesService(map);
+  service.nearbySearch({
+    location:{lat,lng},
+    radius:2000,
+    keyword:'iglesia católica misa',
+    type:'church'
+  },(results,status)=>{
+    if(ld)ld.style.display='none';
+    const list=document.getElementById('iglesias-list');
+    if(!list)return;
+
+    if(status!==google.maps.places.PlacesServiceStatus.OK||!results.length){
+      const el=document.getElementById('iglesias-error');
+      if(el){el.style.display='block';el.textContent='No se encontraron iglesias en un radio de 2km.';}
+      return;
+    }
+
+    list.style.display='block';
+    list.innerHTML=`<div style="font-size:11px;color:#085041;font-weight:500;margin-bottom:6px;">Iglesias en 2km — misa antes de las ${horaLimite}:</div>`;
+
+    const top=results.slice(0,5);
+    top.forEach(place=>{
+      // Calcular distancia aproximada
+      const R=6371000;
+      const dLat=(place.geometry.location.lat()-lat)*Math.PI/180;
+      const dLng=(place.geometry.location.lng()-lng)*Math.PI/180;
+      const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat*Math.PI/180)*Math.cos(place.geometry.location.lat()*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+      const dist=Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
+      const distStr=dist<1000?dist+'m':(dist/1000).toFixed(1)+'km';
+      const walkMin=Math.round(dist/80); // 80m/min andando
+
+      // Marcador en el mapa
+      const marker=new google.maps.Marker({
+        position:place.geometry.location,
+        map,
+        title:place.name,
+        icon:{url:'https://maps.google.com/mapfiles/ms/icons/red-dot.png'}
+      });
+
+      const row=document.createElement('div');
+      row.style.cssText='padding:8px 0;border-bottom:1px solid #9FE1CB;';
+      row.innerHTML=`
+        <div style="font-size:13px;font-weight:500;color:#085041;">${place.name}</div>
+        <div style="font-size:11px;color:#555;margin-top:2px;">📍 ${place.vicinity||''}</div>
+        <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">
+          <span style="font-size:11px;background:#E1F5EE;color:#085041;padding:1px 7px;border-radius:99px;">🚶 ${distStr} · ${walkMin} min</span>
+          ${place.opening_hours?`<span style="font-size:11px;background:${place.opening_hours.open_now?'#E1F5EE':'#FCEBEB'};color:${place.opening_hours.open_now?'#085041':'#A32D2D'};padding:1px 7px;border-radius:99px;">${place.opening_hours.open_now?'Abierta ahora':'Cerrada ahora'}</span>`:''}
+        </div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${place.geometry.location.lat()},${place.geometry.location.lng()}&travelmode=walking" target="_blank" style="font-size:11px;padding:3px 10px;border-radius:99px;border:1px solid #1D9E75;background:white;color:#085041;text-decoration:none;">🗺 Cómo llegar</a>
+          <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name+' '+place.vicinity)}" target="_blank" style="font-size:11px;padding:3px 10px;border-radius:99px;border:1px solid #85B7EB;background:white;color:#0C447C;text-decoration:none;">ℹ Ver en Maps</a>
+        </div>
+      `;
+      list.appendChild(row);
+
+      // Info window al pulsar marcador
+      const iw=new google.maps.InfoWindow({content:`<div style="font-size:12px;font-weight:500;">${place.name}</div><div style="font-size:11px;">${distStr} · ${walkMin} min andando</div>`});
+      marker.addListener('click',()=>iw.open(map,marker));
+    });
+  });
+}
+
+load();renderAll();
+</script>
+</body>
+</html>
