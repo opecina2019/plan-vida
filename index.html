@@ -996,73 +996,179 @@ function setNorma(i,v) { examData.normas[i] = examData.normas[i]===v ? undefined
 function saveSent() { const e=document.getElementById('sent-txt'); if(e) examData.sent=e.value; }
 function saveProp() { const e=document.getElementById('prop-txt'); if(e) examData.prop=e.value; }
 
-// ─── OUTLOOK VIA CLAUDE API ────────────────────────────────────────────────
+// ─── OUTLOOK VIA MICROSOFT LOGIN (MSAL) ───────────────────────────────────
+const MSAL_CLIENT_ID = '14d82eec-204b-4c2f-b7e8-296a70dab67e'; // Microsoft Graph Explorer client (público)
+const MSAL_SCOPES    = ['Calendars.Read', 'User.Read'];
+const MSAL_AUTHORITY = 'https://login.microsoftonline.com/common';
+
+let msalToken = null;
+
+function getMsalToken() {
+  try { return localStorage.getItem('ms_token') || null; } catch(e) { return null; }
+}
+function setMsalToken(t) {
+  try { localStorage.setItem('ms_token', t); } catch(e) {}
+}
+function clearMsalToken() {
+  try { localStorage.removeItem('ms_token'); } catch(e) {}
+}
+
+async function loginMicrosoft() {
+  // Usamos el flujo OAuth2 implicit grant con popup
+  const redirectUri = encodeURIComponent(window.location.href.split('?')[0].split('#')[0]);
+  const scope = encodeURIComponent(MSAL_SCOPES.join(' '));
+  const nonce = Math.random().toString(36).slice(2);
+  const state = Math.random().toString(36).slice(2);
+  localStorage.setItem('ms_oauth_state', state);
+
+  const url = `${MSAL_AUTHORITY}/oauth2/v2.0/authorize` +
+    `?client_id=${MSAL_CLIENT_ID}` +
+    `&response_type=token` +
+    `&redirect_uri=${redirectUri}` +
+    `&scope=${scope}` +
+    `&nonce=${nonce}` +
+    `&state=${state}` +
+    `&prompt=select_account`;
+
+  const popup = window.open(url, 'mslogin', 'width=500,height=650,top=100,left=200');
+
+  return new Promise((resolve, reject) => {
+    const timer = setInterval(() => {
+      try {
+        if (!popup || popup.closed) {
+          clearInterval(timer);
+          reject(new Error('Ventana cerrada'));
+          return;
+        }
+        const hash = popup.location.hash;
+        if (hash && hash.includes('access_token')) {
+          clearInterval(timer);
+          popup.close();
+          const params = new URLSearchParams(hash.slice(1));
+          const token = params.get('access_token');
+          if (token) {
+            setMsalToken(token);
+            resolve(token);
+          } else {
+            reject(new Error('Token no recibido'));
+          }
+        }
+      } catch(e) {
+        // Cross-origin mientras carga — normal, seguimos esperando
+      }
+    }, 500);
+    // Timeout 3 minutos
+    setTimeout(() => { clearInterval(timer); if (!popup.closed) popup.close(); reject(new Error('Timeout')); }, 180000);
+  });
+}
+
 async function leerOutlook() {
   const area = document.getElementById('outlook-area');
   if (!area) return;
-  const key = localStorage.getItem('anthropic_key');
-  if (!key) {
+
+  let token = getMsalToken();
+
+  if (!token) {
     area.innerHTML = `
-      <div class="exam-card" style="background:#FFF8E1;border:1px solid #FFD54F;">
-        <div style="font-size:12px;color:#8a6d00;margin-bottom:8px;">Para leer Outlook, introduce tu API key de Anthropic (la guardas una sola vez).</div>
-        <input id="api-key-input" type="password" class="cfg-input" placeholder="sk-ant-api03-...">
-        <div class="btn-row"><button class="btn pri" onclick="guardarApiKey()">Guardar y conectar</button></div>
+      <div class="exam-card" style="background:#EAF4FB;border:1px solid #90CAF9;">
+        <div style="font-size:13px;font-weight:600;color:#1a5276;margin-bottom:6px;">📅 Conectar con Outlook</div>
+        <div style="font-size:12px;color:#1a5276;margin-bottom:12px;">Inicia sesión con tu cuenta de Microsoft para leer tu calendario automáticamente cada noche.</div>
+        <button class="btn pri" style="background:#0078D4;border-color:#0078D4;width:100%;" onclick="conectarOutlook()">
+          🔑 Iniciar sesión con Microsoft
+        </button>
       </div>`;
     return;
   }
+
+  area.innerHTML = `<div class="exam-card" style="background:#EAF4FB;border:1px solid #90CAF9;">
+    <div style="font-size:12px;color:#1a5276;">📅 Leyendo tu calendario de Outlook...</div>
+  </div>`;
+
   try {
-    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
-    const tStr = tomorrow.toISOString().split('T')[0];
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-api-key':key, 'anthropic-version':'2023-06-01' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
-        system: 'Lee el calendario de Outlook y devuelve SOLO JSON con el array "events": [{title,start,end,location}]. Sin texto extra.',
-        messages: [{ role:'user', content:`Eventos de Outlook de Oscar Peciña para mañana ${tStr}.` }],
-        mcp_servers: [{ type:'url', url:MS365_MCP, name:'microsoft365' }]
-      })
-    });
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const start = new Date(tomorrow); start.setHours(0,0,0,0);
+    const end   = new Date(tomorrow); end.setHours(23,59,59,999);
+
+    const resp = await fetch(
+      `https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=${start.toISOString()}&endDateTime=${end.toISOString()}&$select=subject,start,end,location&$orderby=start/dateTime&$top=20`,
+      { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+    );
+
+    if (resp.status === 401) {
+      clearMsalToken();
+      area.innerHTML = `<div class="exam-card" style="background:#FFF8E1;border:1px solid #FFD54F;">
+        <div style="font-size:12px;color:#8a6d00;margin-bottom:8px;">⚠️ Sesión expirada. Vuelve a conectar.</div>
+        <button class="btn pri" style="background:#0078D4;border-color:#0078D4;width:100%;" onclick="conectarOutlook()">🔑 Reconectar con Microsoft</button>
+      </div>`;
+      return;
+    }
+
     const data = await resp.json();
-    const text = (data.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
-    const parsed = JSON.parse(text.replace(/```json|```/g,'').trim());
-    const events = parsed.events || [];
+    const events = data.value || [];
+
     if (!events.length) {
       area.innerHTML = `<div class="exam-card"><div style="font-size:13px;color:var(--verde);">📅 Sin eventos en Outlook para mañana.</div></div>`;
-    } else {
-      const rows = events.map(ev => {
-        const s = ev.start ? new Date(ev.start).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
-        const e = ev.end   ? new Date(ev.end).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
-        return `<div class="ev-row"><div class="ev-dot"></div><div><div class="ev-name">${ev.title||ev.subject||'Evento'}</div><div class="ev-time">${s}${e?'–'+e:''} ${ev.location?'· '+ev.location:''}</div></div></div>`;
-      }).join('');
-      // Calcular minuto heroico
-      const first = events.sort((a,b)=>new Date(a.start)-new Date(b.start))[0];
-      let heroHtml = '';
-      if (first) {
-        const fs = new Date(first.start);
-        const heroMs = fs.getTime() - (75+75)*60000;
-        const heroDate = new Date(heroMs);
-        const hh = String(heroDate.getHours()).padStart(2,'0');
-        const hm = String(heroDate.getMinutes()).padStart(2,'0');
-        const bedH = String((heroDate.getHours()-8+24)%24).padStart(2,'0');
-        heroHtml = `<div class="exam-card" style="margin-top:8px;"><div class="exam-card-lbl">Minuto heroico calculado desde Outlook</div>
-          <div style="font-size:22px;font-weight:300;color:#3C3489;">${hh}:${hm}</div>
-          <div style="font-size:12px;color:#534AB7;">Acuéstate esta noche antes de las ${bedH}:${hm}</div></div>`;
-      }
-      area.innerHTML = `<div class="exam-card"><div class="exam-card-lbl">📅 Outlook — mañana</div>${rows}</div>${heroHtml}`;
+      return;
     }
+
+    const rows = events.map(ev => {
+      const s = ev.start?.dateTime ? new Date(ev.start.dateTime).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
+      const e = ev.end?.dateTime   ? new Date(ev.end.dateTime).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
+      const loc = ev.location?.displayName ? ' · ' + ev.location.displayName : '';
+      return `<div class="ev-row"><div class="ev-dot"></div><div>
+        <div class="ev-name">${ev.subject||'Evento'}</div>
+        <div class="ev-time">${s}${e?'–'+e:''}${loc}</div>
+      </div></div>`;
+    }).join('');
+
+    // Calcular minuto heroico desde el primer evento
+    const first = events[0];
+    let heroHtml = '';
+    if (first?.start?.dateTime) {
+      const fs = new Date(first.start.dateTime);
+      const heroMs = fs.getTime() - (75 + 75) * 60000;
+      const heroDate = new Date(heroMs);
+      const hh = String(heroDate.getHours()).padStart(2,'0');
+      const hm = String(heroDate.getMinutes()).padStart(2,'0');
+      const bedH = String((heroDate.getHours() - 8 + 24) % 24).padStart(2,'0');
+      heroHtml = `
+        <div class="exam-card" style="margin-top:8px;">
+          <div class="exam-card-lbl">⏰ Minuto heroico calculado</div>
+          <div style="font-size:22px;font-weight:300;color:#3C3489;">${hh}:${hm}</div>
+          <div style="font-size:12px;color:#534AB7;">Acuéstate esta noche antes de las ${bedH}:${hm}</div>
+        </div>`;
+    }
+
+    area.innerHTML = `
+      <div class="exam-card"><div class="exam-card-lbl">📅 Outlook — mañana</div>${rows}</div>
+      ${heroHtml}
+      <div style="text-align:right;margin-top:4px;">
+        <button onclick="clearMsalToken();leerOutlook();" style="background:none;border:none;font-size:11px;color:var(--gris);cursor:pointer;">Cambiar cuenta</button>
+      </div>`;
+
   } catch(err) {
-    area.innerHTML = `<div class="exam-card" style="background:#FCEBEB;"><div style="font-size:12px;color:#A32D2D;">No se pudo conectar con Outlook. ${err.message||''}</div></div>`;
+    area.innerHTML = `<div class="exam-card" style="background:#FCEBEB;">
+      <div style="font-size:12px;color:#A32D2D;">⚠️ Error leyendo Outlook: ${err.message||'Error desconocido'}</div>
+      <button class="btn" style="margin-top:8px;width:100%;" onclick="clearMsalToken();leerOutlook();">Volver a conectar</button>
+    </div>`;
   }
 }
 
-function guardarApiKey() {
-  const input = document.getElementById('api-key-input');
-  if (input && input.value.startsWith('sk-ant-')) {
-    localStorage.setItem('anthropic_key', input.value.trim());
-    leerOutlook();
-  } else { alert('La clave debe empezar por sk-ant-'); }
+async function conectarOutlook() {
+  const area = document.getElementById('outlook-area');
+  if (area) area.innerHTML = `<div class="exam-card" style="background:#EAF4FB;border:1px solid #90CAF9;">
+    <div style="font-size:12px;color:#1a5276;">🔐 Abriendo ventana de Microsoft...</div>
+  </div>`;
+  try {
+    await loginMicrosoft();
+    await leerOutlook();
+  } catch(err) {
+    if (area) area.innerHTML = `<div class="exam-card" style="background:#FFF8E1;border:1px solid #FFD54F;">
+      <div style="font-size:12px;color:#8a6d00;margin-bottom:8px;">No se pudo completar el login. ${err.message||''}</div>
+      <button class="btn pri" style="background:#0078D4;border-color:#0078D4;width:100%;" onclick="conectarOutlook()">🔑 Intentar de nuevo</button>
+    </div>`;
+  }
 }
 
 // ─── BUSCADOR DE IGLESIAS ──────────────────────────────────────────────────
@@ -1183,17 +1289,14 @@ function renderConfig() {
     </div>
 
     <div class="cfg-section">
-      <div class="cfg-sec-title">🔑 API Key Anthropic (Outlook)</div>
+      <div class="cfg-sec-title">📅 Conexión con Outlook</div>
       <div class="cfg-row">
-        <label class="cfg-label">Estado: ${localStorage.getItem('anthropic_key') ? '✅ Configurada' : '❌ No configurada'}</label>
-        <input class="cfg-input" type="password" id="c-api-key" placeholder="sk-ant-api03-...">
+        <label class="cfg-label">Estado: ${getMsalToken() ? '✅ Conectado con Microsoft' : '❌ No conectado'}</label>
+        ${getMsalToken()
+          ? `<button class="btn" style="margin-top:8px;width:100%;color:#A32D2D;" onclick="clearMsalToken();renderConfig();">Desconectar cuenta Microsoft</button>`
+          : `<button class="btn pri" style="background:#0078D4;border-color:#0078D4;margin-top:8px;width:100%;" onclick="conectarOutlook();">🔑 Conectar con Microsoft</button>`
+        }
       </div>
-      <button class="btn" onclick="
-        const k=document.getElementById('c-api-key').value;
-        if(k.startsWith('sk-ant-')){localStorage.setItem('anthropic_key',k);alert('✅ Guardada');}
-        else if(k===''){localStorage.removeItem('anthropic_key');alert('Eliminada');}
-        else{alert('Clave inválida');}
-      ">Actualizar clave</button>
     </div>
 
     <button class="btn pri full" onclick="guardarConfig()">💾 Guardar configuración</button>
