@@ -236,7 +236,7 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
   </div>
 
   <div class="footer">
-    <span class="version">v20 · mayo 2026</span>
+    <span class="version">v21 · mayo 2026</span>
     <div class="footer-btns">
       <button class="footer-btn blue" onclick="openModal('cfg')">⚙ Configuración</button>
       <button class="footer-btn" onclick="resetDay()">↺ Reiniciar</button>
@@ -948,8 +948,8 @@ function renderExam() {
     const allRows = [
       ...todosItems.map(p => ({ t:_pt(p.t), html:'<div class="plan-row"><div class="plan-dot" style="background:var(--verde);"></div><div class="plan-time">'+p.t+'</div><div><div class="plan-name">'+p.n+'</div></div></div>' })),
       ...outlookEvs.map(ev => {
-        const s = ev.start&&ev.start.dateTime ? new Date(ev.start.dateTime).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
-        const e = ev.end&&ev.end.dateTime ? new Date(ev.end.dateTime).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
+        const s = ev.start&&ev.start.dateTime ? new Date(ev.start.dateTime).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}) : '';
+        const e = ev.end&&ev.end.dateTime ? new Date(ev.end.dateTime).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}) : '';
         return { t:_pt(s), html:'<div class="plan-row"><div class="plan-dot" style="background:#0078D4;"></div><div class="plan-time" style="color:#0078D4;">'+s+(e?'–'+e:'')+'</div><div><div class="plan-name">'+(ev.subject||'Evento')+'</div><div style="font-size:10px;color:#0078D4;">📅 Outlook</div></div></div>' };
       })
     ].sort((a,b)=>a.t-b.t).map(r=>r.html).join('');
@@ -1107,8 +1107,8 @@ async function leerOutlook() {
     }
 
     const rows = events.map(ev => {
-      const s = ev.start?.dateTime ? new Date(ev.start.dateTime).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
-      const e = ev.end?.dateTime   ? new Date(ev.end.dateTime).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
+      const s = ev.start?.dateTime ? new Date(ev.start.dateTime).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}) : '';
+      const e = ev.end?.dateTime   ? new Date(ev.end.dateTime).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}) : '';
       const loc = ev.location?.displayName ? ' · ' + ev.location.displayName : '';
       return `<div class="ev-row"><div class="ev-dot"></div><div>
         <div class="ev-name">${ev.subject||'Evento'}</div>
