@@ -206,6 +206,7 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
   <div class="header">
     <div class="header-top">
       <div class="day-tabs" id="day-tabs"></div>
+      <button class="cfg-btn" onclick="syncOutlook()" id="outlook-sync-btn" title="Sincronizar Outlook">📅</button>
       <button class="cfg-btn" onclick="openModal('cfg')" title="Configuración">⚙️</button>
     </div>
   </div>
@@ -236,7 +237,7 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
   </div>
 
   <div class="footer">
-    <span class="version">v23 · mayo 2026</span>
+    <span class="version">v24 · mayo 2026</span>
     <div class="footer-btns">
       <button class="footer-btn blue" onclick="openModal('cfg')">⚙ Configuración</button>
       <button class="footer-btn" onclick="resetDay()">↺ Reiniciar</button>
@@ -1320,9 +1321,53 @@ function resetDay() {
   renderAll();
 }
 
+// ─── SYNC OUTLOOK ─────────────────────────────────────────────────────────────
+async function syncOutlook() {
+  const btn = document.getElementById('outlook-sync-btn');
+  const token = getMsalToken();
+  if (!token) {
+    // No conectado — lanzar login
+    if (btn) { btn.textContent = '🔄'; btn.disabled = true; }
+    try {
+      await loginMicrosoft();
+      await _fetchOutlookEvents();
+      if (btn) { btn.textContent = '✅'; btn.disabled = false; setTimeout(() => { btn.textContent = '📅'; }, 2000); }
+    } catch(e) {
+      if (btn) { btn.textContent = '📅'; btn.disabled = false; }
+    }
+    return;
+  }
+  if (btn) { btn.textContent = '🔄'; btn.disabled = true; }
+  try {
+    await _fetchOutlookEvents();
+    if (btn) { btn.textContent = '✅'; btn.disabled = false; setTimeout(() => { btn.textContent = '📅'; }, 2000); }
+  } catch(e) {
+    if (btn) { btn.textContent = '❌'; btn.disabled = false; setTimeout(() => { btn.textContent = '📅'; }, 2000); }
+  }
+}
+
+async function _fetchOutlookEvents() {
+  const token = getMsalToken();
+  if (!token) throw new Error('Sin token');
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  const start = new Date(tomorrow); start.setHours(0,0,0,0);
+  const end   = new Date(tomorrow); end.setHours(23,59,59,999);
+  const resp = await fetch(
+    'https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=' + start.toISOString() + '&endDateTime=' + end.toISOString() + '&=subject,start,end,location&=start/dateTime&=20',
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  if (resp.status === 401) { clearMsalToken(); throw new Error('Token expirado'); }
+  const data = await resp.json();
+  const events = data.value || [];
+  try { sessionStorage.setItem('outlook_events', JSON.stringify(events)); } catch(e) {}
+  return events;
+}
+
 // ─── INIT ──────────────────────────────────────────────────────────────────
 loadState();
 renderAll();
+// Auto-sync Outlook al cargar si hay token
+if (getMsalToken()) { setTimeout(() => syncOutlook(), 1500); }
 </script>
 </body>
 </html>
