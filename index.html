@@ -32,7 +32,7 @@
   --radio-xs: 6px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--gris-claro); color: var(--texto); min-height: 100vh; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #ffffff; color: var(--texto); min-height: 100vh; color-scheme: light; }
 .app { max-width: 640px; margin: 0 auto; padding: 12px; }
 
 /* HEADER */
@@ -198,15 +198,7 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
 .iglesia-link { font-size: 11px; padding: 3px 10px; border-radius: 99px; border: 1px solid; text-decoration: none; }
 .map-div { width: 100%; height: 180px; border-radius: var(--radio-xs); margin-top: 10px; }
 
-@media (prefers-color-scheme: dark) {
-  body { background: #111; color: #eee; }
-  .header, .item, .prog-wrap, .modal { background: #1e1e1e; border-color: #333; }
-  .day-tab { background: #1e1e1e; border-color: #333; color: #aaa; }
-  .cfg-input, .textarea, .norma-btn, .btn { background: #1e1e1e; border-color: #333; color: #eee; }
-  .exam-card, .tip { background: #2a2a2a; }
-  .sec-label, .norma-row { border-color: #333; }
-  .sum-row, .ev-row, .plan-row, .norma-row { border-color: #333; }
-}
+/* modo oscuro desactivado — forzar siempre claro */
 </style>
 </head>
 <body>
@@ -244,7 +236,7 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
   </div>
 
   <div class="footer">
-    <span class="version">v17 · mayo 2026</span>
+    <span class="version">v20 · mayo 2026</span>
     <div class="footer-btns">
       <button class="footer-btn blue" onclick="openModal('cfg')">⚙ Configuración</button>
       <button class="footer-btn" onclick="resetDay()">↺ Reiniciar</button>
@@ -947,26 +939,27 @@ function renderExam() {
   }
   else if (s === 'plan') {
     const nextDay = DAYS[(curDay+1) % DAYS.length];
-    const planRows = nextDay.secs[0].items.slice(0,6).map(p =>
-      `<div class="plan-row">
-        <div class="plan-dot"></div>
-        <div class="plan-time">${p.t}</div>
-        <div><div class="plan-name">${p.n}</div></div>
-      </div>`
-    ).join('');
-    const evRows = day.nextEvents.length
-      ? day.nextEvents.map(ev => `<div class="ev-row"><div class="ev-dot"></div><div><div class="ev-name">${ev.n}</div><div class="ev-time">${ev.t}</div></div></div>`).join('')
-      : '<div style="font-size:13px;color:var(--verde);">Sin reuniones agendadas.</div>';
-
-    html += `
-      <div class="exam-q">Plan para ${day.nextLabel}</div>
-      ${day.nextEvents.length ? `<div class="exam-card"><div class="exam-card-lbl">Reuniones</div>${evRows}</div>` : `<div class="exam-card">${evRows}</div>`}
-      <div class="exam-card"><div class="exam-card-lbl">Minuto heroico: ${day.nextWake} · Acostarse: ${day.nextBed}</div>${planRows}</div>
-      ${examData.prop ? `<div class="exam-card"><div class="exam-card-lbl">Tu propósito</div><div style="font-size:13px;">${examData.prop}</div></div>` : ''}
-      <div class="btn-row">
-        <button class="btn" onclick="ePrev()">←</button>
-        <button class="btn pri" onclick="eNext()">Cerrar →</button>
-      </div>`;
+    const _tom = new Date(); _tom.setDate(_tom.getDate()+1);
+    const tituloLabel = _tom.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' }).replace(/^./, c => c.toUpperCase());
+    const todosItems = nextDay.secs.flatMap(s => s.items).filter(p => p.t && p.t !== 'Todo el dia' && p.t !== 'A elegir' && p.t !== 'continuo');
+    let outlookEvs = [];
+    try { outlookEvs = JSON.parse(sessionStorage.getItem('outlook_events') || '[]'); } catch(e) {}
+    const _pt = t => { const m=(t||'').match(/(\d{1,2}):(\d{2})/); return m?parseInt(m[1])*60+parseInt(m[2]):9999; };
+    const allRows = [
+      ...todosItems.map(p => ({ t:_pt(p.t), html:'<div class="plan-row"><div class="plan-dot" style="background:var(--verde);"></div><div class="plan-time">'+p.t+'</div><div><div class="plan-name">'+p.n+'</div></div></div>' })),
+      ...outlookEvs.map(ev => {
+        const s = ev.start&&ev.start.dateTime ? new Date(ev.start.dateTime).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
+        const e = ev.end&&ev.end.dateTime ? new Date(ev.end.dateTime).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}) : '';
+        return { t:_pt(s), html:'<div class="plan-row"><div class="plan-dot" style="background:#0078D4;"></div><div class="plan-time" style="color:#0078D4;">'+s+(e?'–'+e:'')+'</div><div><div class="plan-name">'+(ev.subject||'Evento')+'</div><div style="font-size:10px;color:#0078D4;">📅 Outlook</div></div></div>' };
+      })
+    ].sort((a,b)=>a.t-b.t).map(r=>r.html).join('');
+    html += '<div class="exam-q">Plan para '+tituloLabel+'</div>'
+      + '<div class="exam-card"><div class="exam-card-lbl">⏰ '+day.nextWake+' Levantarse · 🌙 '+day.nextBed+' Acostarse</div>'
+      + (allRows || '<div style="font-size:13px;color:var(--gris);">Sin eventos.</div>')
+      + (outlookEvs.length ? '<div style="font-size:10px;margin-top:8px;"><span style="color:var(--verde);">● App</span> &nbsp; <span style="color:#0078D4;">● Outlook</span></div>' : '')
+      + '</div>'
+      + (examData.prop ? '<div class="exam-card"><div class="exam-card-lbl">Tu propósito</div><div style="font-size:13px;">'+examData.prop+'</div></div>' : '')
+      + '<div class="btn-row"><button class="btn" onclick="ePrev()">←</button><button class="btn pri" onclick="eNext()">Cerrar →</button></div>';
   }
   else if (s === 'cierre') {
     const dn = Object.values(examData.normas).filter(v=>v==='ok').length;
@@ -997,7 +990,7 @@ function saveSent() { const e=document.getElementById('sent-txt'); if(e) examDat
 function saveProp() { const e=document.getElementById('prop-txt'); if(e) examData.prop=e.value; }
 
 // ─── OUTLOOK VIA MICROSOFT LOGIN (MSAL) ───────────────────────────────────
-const MSAL_CLIENT_ID = '14d82eec-204b-4c2f-b7e8-296a70dab67e'; // Microsoft Graph Explorer client (público)
+const MSAL_CLIENT_ID = '17d230c0-11bd-4aa4-b343-62ba5ae1cbc8'; // Plan de Vida - Bexiflon
 const MSAL_SCOPES    = ['Calendars.Read', 'User.Read'];
 const MSAL_AUTHORITY = 'https://login.microsoftonline.com/common';
 
@@ -1106,6 +1099,7 @@ async function leerOutlook() {
 
     const data = await resp.json();
     const events = data.value || [];
+    try { sessionStorage.setItem('outlook_events', JSON.stringify(events)); } catch(e) {}
 
     if (!events.length) {
       area.innerHTML = `<div class="exam-card"><div style="font-size:13px;color:var(--verde);">📅 Sin eventos en Outlook para mañana.</div></div>`;
