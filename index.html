@@ -199,6 +199,17 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
 .map-div { width: 100%; height: 180px; border-radius: var(--radio-xs); margin-top: 10px; }
 
 /* modo oscuro desactivado — forzar siempre claro */
+.plan-ev-card { background:white; border:1.5px solid var(--borde); border-left:3px solid var(--verde); border-radius:var(--radio-sm); padding:10px 12px; margin-bottom:6px; }
+.plan-ev-card.past { opacity:.45; border-left-color:var(--borde); }
+.plan-ev-card.now  { border-left-color:var(--amarillo); background:#FFFDE7; }
+.plan-ev-card.tmrw { border-left-color:var(--azul); }
+.plan-ev-time { font-size:11px; color:var(--gris); font-weight:500; }
+.plan-ev-name { font-size:14px; font-weight:500; color:var(--texto); margin-top:2px; }
+.plan-ev-loc  { font-size:11px; color:var(--gris); margin-top:2px; }
+.plan-sec-hdr { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--gris); margin:14px 0 6px; padding-left:2px; display:flex;align-items:center;gap:6px; }
+.plan-sec-dot { width:7px;height:7px;border-radius:50%;background:var(--verde);display:inline-block; }
+.plan-sec-dot.azul { background:var(--azul); }
+.now-badge { display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px;background:#FFF8E1;color:#8a6d00;border:1px solid #FFD54F;margin-left:6px; }
 </style>
 </head>
 <body>
@@ -206,8 +217,11 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
   <div class="header">
     <div class="header-top">
       <div class="day-tabs" id="day-tabs"></div>
-      <button class="cfg-btn" onclick="syncOutlook()" id="outlook-sync-btn" title="Sincronizar Outlook">📅</button>
-      <button class="cfg-btn" onclick="openModal('cfg')" title="Configuración">⚙️</button>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;margin-left:6px;">
+        <button class="cfg-btn" onclick="openModal('plan')" id="plan-btn" title="Plan del día" style="font-size:13px;font-weight:600;color:#534AB7;background:#EEEDFE;border:1.5px solid #AFA9EC;border-radius:8px;padding:5px 10px;">📋 Hoy</button>
+        <button class="cfg-btn" onclick="syncOutlook()" id="outlook-sync-btn" title="Sincronizar Outlook" style="font-size:13px;font-weight:600;color:#1a5276;background:#EAF4FB;border:1.5px solid #90CAF9;border-radius:8px;padding:5px 10px;">🔄 Sync</button>
+        <button class="cfg-btn" onclick="openModal('cfg')" title="Configuración">⚙️</button>
+      </div>
     </div>
   </div>
 
@@ -237,7 +251,7 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
   </div>
 
   <div class="footer">
-    <span class="version">v24 · mayo 2026</span>
+    <span class="version">v25 · mayo 2026</span>
     <div class="footer-btns">
       <button class="footer-btn blue" onclick="openModal('cfg')">⚙ Configuración</button>
       <button class="footer-btn" onclick="resetDay()">↺ Reiniciar</button>
@@ -838,6 +852,7 @@ function openModal(mode) {
   if (mode === 'exam') renderExam();
   else if (mode === 'cfg') renderConfig();
   else if (mode === 'maria') openMariaModal();
+  else if (mode === 'plan') renderPlanDia();
 }
 
 function closeModal() {
@@ -1109,7 +1124,7 @@ async function leerOutlook() {
     }
 
     const rows = events.map(ev => {
-      const _ft = dt => { if(!dt) return ''; if(dt.endsWith('Z')||dt.includes('+')){ const d=new Date(dt); return d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}); } const m=dt.match(/T(\d{2}):(\d{2})/); return m?m[1]+':'+m[2]:''; };
+      const _ft = dt => { if(!dt) return ''; let d; if(dt.endsWith('Z')||dt.includes('+')||dt.includes('-',10)){ d=new Date(dt); } else { d=new Date(dt+'Z'); } return d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}); };
       const s = _ft(ev.start?.dateTime);
       const e = _ft(ev.end?.dateTime);
       const loc = ev.location?.displayName ? ' · ' + ev.location.displayName : '';
@@ -1361,6 +1376,158 @@ async function _fetchOutlookEvents() {
   const events = data.value || [];
   try { sessionStorage.setItem('outlook_events', JSON.stringify(events)); } catch(e) {}
   return events;
+}
+
+// ─── PLAN DEL DÍA ──────────────────────────────────────────────────────────
+function _ftMadrid(dt) {
+  if (!dt) return '';
+  // Si la cadena no tiene zona horaria, asumir UTC y sumar 2h (Europe/Madrid)
+  let d;
+  if (dt.endsWith('Z') || dt.includes('+') || dt.includes('-', 10)) {
+    d = new Date(dt);
+  } else {
+    // Sin timezone: tratar como UTC
+    d = new Date(dt + 'Z');
+  }
+  return d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' });
+}
+
+async function renderPlanDia() {
+  document.getElementById('modal-title').textContent = '📋 Plan del día';
+  const body = document.getElementById('modal-body');
+  body.innerHTML = '<div style="text-align:center;padding:20px;color:var(--gris);">Cargando eventos...</div>';
+
+  const token = getMsalToken();
+  if (!token) {
+    body.innerHTML = `<div class="exam-card" style="background:#EAF4FB;border:1px solid #90CAF9;">
+      <div style="font-size:13px;font-weight:600;color:#1a5276;margin-bottom:6px;">📅 Conectar con Outlook</div>
+      <div style="font-size:12px;color:#1a5276;margin-bottom:12px;">Inicia sesión con tu cuenta de Microsoft para ver tu plan del día.</div>
+      <button class="btn pri" style="background:#0078D4;border-color:#0078D4;width:100%;" onclick="conectarOutlookPlan()">🔑 Iniciar sesión con Microsoft</button>
+    </div>`;
+    return;
+  }
+
+  try {
+    const now = new Date();
+    // Rango: desde inicio del día hoy hasta fin del día mañana
+    const todayStart = new Date(now); todayStart.setHours(0,0,0,0);
+    const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1);
+    const tomorrowEnd = new Date(tomorrow); tomorrowEnd.setHours(23,59,59,999);
+
+    const resp = await fetch(
+      `https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=${todayStart.toISOString()}&endDateTime=${tomorrowEnd.toISOString()}&$select=subject,start,end,location&$orderby=start/dateTime&$top=30`,
+      { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+    );
+
+    if (resp.status === 401) {
+      clearMsalToken();
+      body.innerHTML = `<div class="exam-card" style="background:#FFF8E1;border:1px solid #FFD54F;">
+        <div style="font-size:12px;color:#8a6d00;margin-bottom:8px;">⚠️ Sesión expirada.</div>
+        <button class="btn pri" style="background:#0078D4;border-color:#0078D4;width:100%;" onclick="conectarOutlookPlan()">🔑 Reconectar</button>
+      </div>`;
+      return;
+    }
+
+    const data = await resp.json();
+    const events = data.value || [];
+
+    // Separar en hoy (solo los que quedan) y mañana
+    const todayDateStr = now.toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid' });
+    const tomorrowDateStr = tomorrow.toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid' });
+
+    const evToday    = [];
+    const evTomorrow = [];
+
+    events.forEach(ev => {
+      const dtRaw = ev.start?.dateTime || ev.start?.date;
+      if (!dtRaw) return;
+      let d;
+      if (ev.start?.date) { d = new Date(ev.start.date + 'T00:00:00'); }
+      else if (dtRaw.endsWith('Z') || dtRaw.includes('+') || dtRaw.includes('-',10)) { d = new Date(dtRaw); }
+      else { d = new Date(dtRaw + 'Z'); }
+      const dayStr = d.toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid' });
+      if (dayStr === todayDateStr) evToday.push(ev);
+      else if (dayStr === tomorrowDateStr) evTomorrow.push(ev);
+    });
+
+    // Del día de hoy, solo los que no han terminado aún
+    const remaining = evToday.filter(ev => {
+      const endRaw = ev.end?.dateTime;
+      if (!endRaw) return true;
+      const endD = endRaw.endsWith('Z') || endRaw.includes('+') ? new Date(endRaw) : new Date(endRaw + 'Z');
+      return endD > now;
+    });
+
+    function evCard(ev, type) {
+      const s = _ftMadrid(ev.start?.dateTime || ev.start?.date);
+      const e = _ftMadrid(ev.end?.dateTime || ev.end?.date);
+      const loc = ev.location?.displayName ? `<div class="plan-ev-loc">📍 ${ev.location.displayName}</div>` : '';
+      // ¿está en curso ahora?
+      const startD = ev.start?.dateTime ? (ev.start.dateTime.endsWith('Z') || ev.start.dateTime.includes('+') ? new Date(ev.start.dateTime) : new Date(ev.start.dateTime+'Z')) : null;
+      const endD   = ev.end?.dateTime   ? (ev.end.dateTime.endsWith('Z')   || ev.end.dateTime.includes('+')   ? new Date(ev.end.dateTime)   : new Date(ev.end.dateTime+'Z'))   : null;
+      const isNow  = startD && endD && now >= startD && now <= endD;
+      const cls    = type === 'tmrw' ? 'tmrw' : isNow ? 'now' : '';
+      const badge  = isNow ? '<span class="now-badge">EN CURSO</span>' : '';
+      return `<div class="plan-ev-card ${cls}">
+        <div class="plan-ev-time">${s}${e ? ' – '+e : ''}${badge}</div>
+        <div class="plan-ev-name">${ev.subject || 'Evento'}</div>
+        ${loc}
+      </div>`;
+    }
+
+    let html = '';
+
+    if (remaining.length > 0) {
+      html += `<div class="plan-sec-hdr"><span class="plan-sec-dot"></span>Lo que queda de hoy</div>`;
+      html += remaining.map(ev => evCard(ev, 'today')).join('');
+    } else {
+      html += `<div style="background:var(--verde-claro);border:1.5px solid var(--verde);border-radius:var(--radio-sm);padding:10px 14px;margin-bottom:10px;">
+        <div style="font-size:13px;color:var(--verde-oscuro);font-weight:600;">✅ Sin eventos pendientes hoy</div>
+      </div>`;
+    }
+
+    if (evTomorrow.length > 0) {
+      html += `<div class="plan-sec-hdr"><span class="plan-sec-dot azul"></span>Mañana</div>`;
+      html += evTomorrow.map(ev => evCard(ev, 'tmrw')).join('');
+    } else {
+      html += `<div style="font-size:13px;color:var(--gris);padding:8px 0;">Sin eventos en Outlook para mañana.</div>`;
+    }
+
+    if (!remaining.length && !evTomorrow.length) {
+      html = `<div style="text-align:center;padding:24px 0;">
+        <div style="font-size:32px;margin-bottom:8px;">📭</div>
+        <div style="font-size:14px;color:var(--gris);">No hay eventos próximos en Outlook.</div>
+      </div>`;
+    }
+
+    html += `<div style="text-align:right;margin-top:8px;">
+      <button onclick="clearMsalToken();renderPlanDia();" style="background:none;border:none;font-size:11px;color:var(--gris);cursor:pointer;">Cambiar cuenta</button>
+    </div>`;
+
+    body.innerHTML = html;
+
+  } catch(err) {
+    body.innerHTML = `<div class="exam-card" style="background:#FCEBEB;">
+      <div style="font-size:12px;color:#A32D2D;">⚠️ Error leyendo Outlook: ${err.message||'Error desconocido'}</div>
+      <button class="btn" style="margin-top:8px;width:100%;" onclick="renderPlanDia();">Reintentar</button>
+    </div>`;
+  }
+}
+
+async function conectarOutlookPlan() {
+  const body = document.getElementById('modal-body');
+  if (body) body.innerHTML = `<div class="exam-card" style="background:#EAF4FB;border:1px solid #90CAF9;">
+    <div style="font-size:12px;color:#1a5276;">🔐 Abriendo ventana de Microsoft...</div>
+  </div>`;
+  try {
+    await loginMicrosoft();
+    await renderPlanDia();
+  } catch(err) {
+    if (body) body.innerHTML = `<div class="exam-card" style="background:#FFF8E1;border:1px solid #FFD54F;">
+      <div style="font-size:12px;color:#8a6d00;margin-bottom:8px;">No se pudo completar el login. ${err.message||''}</div>
+      <button class="btn pri" style="background:#0078D4;border-color:#0078D4;width:100%;" onclick="conectarOutlookPlan()">🔑 Intentar de nuevo</button>
+    </div>`;
+  }
 }
 
 // ─── INIT ──────────────────────────────────────────────────────────────────
