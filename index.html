@@ -229,6 +229,15 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
 .plan-sec-dot { width:7px;height:7px;border-radius:50%;background:var(--verde);display:inline-block; }
 .plan-sec-dot.azul { background:var(--azul); }
 .now-badge { display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px;background:#FFF8E1;color:#8a6d00;border:1px solid #FFD54F;margin-left:6px; }
+.santo-link { font-size:12px; font-weight:500; color:rgba(255,255,255,.75); text-decoration:none; display:flex; align-items:center; gap:5px; padding:1px 0; letter-spacing:0.01em; }
+.santo-link:hover { color:#fff; text-decoration:underline; }
+.santos-loading { font-size:12px; color:rgba(255,255,255,.5); font-style:italic; }
+.santos-wrap { background:#FAEEDA; border:1.5px solid #FAC775; border-radius:var(--radio-sm); padding:10px 14px; margin-bottom:10px; }
+.santos-title { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#854F0B; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.santos-list { display:flex; flex-direction:column; gap:4px; }
+.santo-link { font-size:13px; font-weight:500; color:#854F0B; text-decoration:none; display:flex; align-items:center; gap:6px; padding:3px 0; }
+.santo-link:hover { text-decoration:underline; }
+.santos-loading { font-size:12px; color:#854F0B; font-style:italic; }
 </style>
 </head>
 <body>
@@ -242,6 +251,7 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
   <div class="splash-middle">
     <div class="splash-clock" id="splash-clock">--:--</div>
     <div class="splash-date" id="splash-date"></div>
+    <div id="splash-santos" style="margin-top:6px;display:flex;flex-direction:column;align-items:center;gap:3px;"></div>
     <div class="splash-btns">
       <button class="splash-btn primary" onclick="splashGo('plan')">
         <span class="splash-btn-icon">📋</span>
@@ -299,7 +309,7 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
   </div>
 
   <div class="footer">
-    <span class="version">v29 · mayo 2026</span>
+    <span class="version">v31 · mayo 2026</span>
     <div class="footer-btns">
       <button class="footer-btn blue" onclick="openModal('cfg')">⚙ Configuración</button>
       <button class="footer-btn" onclick="resetDay()">↺ Reiniciar</button>
@@ -1591,6 +1601,57 @@ async function conectarOutlookPlan() {
 }
 
 // ─── INIT ──────────────────────────────────────────────────────────────────
+// ─── SANTOS DEL DÍA ──────────────────────────────────────────────────────
+async function fetchSantosDelDia(mes, dia) {
+  const mm = String(mes).padStart(2,'0');
+  const dd = String(dia).padStart(2,'0');
+  const query = `site:vaticannews.va/es/santos/${mm}/${dd} santos`;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        system: `Eres un asistente que busca los santos del día en Vatican News.
+Cuando recibas una fecha, busca en vaticannews.va/es/santos/MM/DD.html los santos de ese día.
+Cada santo tiene su propia URL con el formato: vaticannews.va/es/santos/MM/DD/nombre-del-santo.html
+Devuelve SOLO un JSON válido sin texto adicional, sin backticks ni markdown, con esta estructura:
+{"santos":[{"nombre":"Nombre completo del santo","url":"https://www.vaticannews.va/es/santos/MM/DD/slug-del-santo.html"}]}
+Incluye TODOS los santos del día, cada uno con su URL individual si existe, o la URL de la página del día como fallback.`,
+        messages: [{ role: 'user', content: `Busca en Vatican News los santos del día ${dd}/${mm} y devuelve su nombre y URL individual en vaticannews.va` }],
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }]
+      })
+    });
+    const data = await resp.json();
+    const textBlock = data.content?.find(b => b.type === 'text');
+    if (!textBlock) return null;
+    const clean = textBlock.text.replace(/```json[\s\S]*?```|```/g,'').trim();
+    // Encontrar el JSON dentro del texto por si hay texto antes/después
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+    return JSON.parse(jsonMatch[0]);
+  } catch(e) { return null; }
+}
+
+async function renderSantosEnPortada() {
+  const el = document.getElementById('splash-santos');
+  if (!el) return;
+  const now = new Date();
+  const mes = now.getMonth() + 1;
+  const dia = now.getDate();
+  const urlDia = `https://www.vaticannews.va/es/santos/${String(mes).padStart(2,'0')}/${String(dia).padStart(2,'0')}.html`;
+  el.innerHTML = `<span class="santos-loading">✨ Cargando santos del día...</span>`;
+  const data = await fetchSantosDelDia(mes, dia);
+  if (!data || !data.santos || !data.santos.length) {
+    el.innerHTML = `<a class="santo-link" href="${urlDia}" target="_blank">✨ Santos de hoy — Vatican News</a>`;
+    return;
+  }
+  el.innerHTML = data.santos.map(s =>
+    `<a class="santo-link" href="${s.url || urlDia}" target="_blank">✨ ${s.nombre}</a>`
+  ).join('');
+}
+
 // ─── SPLASH ───────────────────────────────────────────────────────────────
 function splashTick() {
   const now = new Date();
@@ -1614,6 +1675,7 @@ function splashGo(dest) {
 
 splashTick();
 setInterval(splashTick, 1000);
+setTimeout(() => renderSantosEnPortada(), 800);
 
 // ─── INIT ──────────────────────────────────────────────────────────────────
 loadState();
