@@ -199,23 +199,23 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
 .map-div { width: 100%; height: 180px; border-radius: var(--radio-xs); margin-top: 10px; }
 
 /* SPLASH / PORTADA */
-.splash { position: fixed; inset: 0; background: linear-gradient(160deg, #0d0820 0%, #1a0a2e 30%, #2d1b5e 65%, #3C3489 100%); display: flex; flex-direction: column; align-items: center; justify-content: space-between; z-index: 200; padding: 52px 0 44px 0; text-align: center; overflow: hidden; }
-.splash-bg-img { width: 75%; max-width: 300px; opacity: 0.72; pointer-events: none; mix-blend-mode: screen; filter: blur(0.2px); display: block; margin: 20px auto 0; }
-.splash-top { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; padding-top: 0; }
-.splash-title { font-size: 30px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 4px; text-shadow: 0 2px 20px rgba(83,74,183,.6); }
-.splash-lema { font-size: 12px; color: rgba(255,255,255,.45); margin-bottom: 0; font-style: italic; letter-spacing: 0.02em; }
-.splash-middle { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
-.splash-clock { font-size: 64px; font-weight: 100; color: rgba(255,255,255,.92); line-height: 1; letter-spacing: -3px; margin-bottom: 4px; font-variant-numeric: tabular-nums; text-shadow: 0 0 40px rgba(140,120,255,.4); }
-.splash-date { font-size: 13px; color: rgba(255,255,255,.5); text-transform: capitalize; letter-spacing: 0.05em; margin-bottom: 36px; }
-.splash-btns { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 12px; width: calc(100% - 48px); max-width: 320px; }
-.splash-btn { width: 100%; padding: 16px 20px; border-radius: 16px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px; font-family: inherit; transition: transform .15s, box-shadow .15s; }
+.splash { position: fixed; inset: 0; background: linear-gradient(160deg, #0d0820 0%, #1a0a2e 30%, #2d1b5e 65%, #3C3489 100%); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; z-index: 200; padding: 18px 24px 24px; text-align: center; overflow-y: auto; overflow-x: hidden; gap: 0; }
+.splash-bg-img { width: 70%; max-width: 260px; opacity: 0.72; pointer-events: none; mix-blend-mode: screen; filter: blur(0.2px); display: block; margin: 6px auto; }
+.splash-top { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 0; }
+.splash-title { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 2px; text-shadow: 0 2px 20px rgba(83,74,183,.6); }
+.splash-lema { font-size: 11px; color: rgba(255,255,255,.45); font-style: italic; letter-spacing: 0.02em; margin-bottom: 0; }
+.splash-middle { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; }
+.splash-clock { font-size: 58px; font-weight: 100; color: rgba(255,255,255,.92); line-height: 1; letter-spacing: -3px; margin: 4px 0 1px; font-variant-numeric: tabular-nums; text-shadow: 0 0 40px rgba(140,120,255,.4); }
+.splash-date { font-size: 12px; color: rgba(255,255,255,.5); text-transform: capitalize; letter-spacing: 0.05em; margin-bottom: 10px; }
+.splash-btns { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 320px; margin-bottom: 10px; }
+.splash-btn { width: 100%; padding: 13px 18px; border-radius: 14px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; font-family: inherit; transition: transform .15s, box-shadow .15s; }
 .splash-btn:active { transform: scale(.97); }
-.splash-btn.primary { background: linear-gradient(135deg, #534AB7 0%, #7B6DD4 100%); color: #fff; box-shadow: 0 8px 28px rgba(83,74,183,.55); }
+.splash-btn.primary { background: linear-gradient(135deg, #534AB7 0%, #7B6DD4 100%); color: #fff; box-shadow: 0 6px 20px rgba(83,74,183,.55); }
 .splash-btn.secondary { background: rgba(255,255,255,.08); color: rgba(255,255,255,.9); border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(12px); }
-.splash-btn-icon { font-size: 20px; flex-shrink: 0; }
+.splash-btn-icon { font-size: 18px; flex-shrink: 0; }
 .splash-btn-lbl { display: flex; flex-direction: column; align-items: flex-start; }
-.splash-btn-title { font-size: 14px; font-weight: 700; line-height: 1.2; }
-.splash-btn-sub { font-size: 11px; font-weight: 400; opacity: .6; margin-top: 2px; }
+.splash-btn-title { font-size: 13px; font-weight: 700; line-height: 1.2; }
+.splash-btn-sub { font-size: 10px; font-weight: 400; opacity: .6; margin-top: 1px; }
 
 /* modo oscuro desactivado — forzar siempre claro */
 .plan-ev-card { background:white; border:1.5px solid var(--borde); border-left:3px solid var(--verde); border-radius:var(--radio-sm); padding:10px 12px; margin-bottom:6px; }
@@ -251,7 +251,6 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
   <div class="splash-middle">
     <div class="splash-clock" id="splash-clock">--:--</div>
     <div class="splash-date" id="splash-date"></div>
-    <div id="splash-santos" style="margin-top:6px;display:flex;flex-direction:column;align-items:center;gap:3px;"></div>
     <div class="splash-btns">
       <button class="splash-btn primary" onclick="splashGo('plan')">
         <span class="splash-btn-icon">📋</span>
@@ -268,6 +267,7 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
         </span>
       </button>
     </div>
+    <div id="splash-santos" style="margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;max-width:320px;"></div>
   </div>
 </div>
 
@@ -309,7 +309,7 @@ audio { width: 100%; margin-top: 6px; border-radius: var(--radio-xs); }
   </div>
 
   <div class="footer">
-    <span class="version">v31 · mayo 2026</span>
+    <span class="version">v36 · mayo 2026</span>
     <div class="footer-btns">
       <button class="footer-btn blue" onclick="openModal('cfg')">⚙ Configuración</button>
       <button class="footer-btn" onclick="resetDay()">↺ Reiniciar</button>
@@ -343,7 +343,7 @@ const URLS = {
   estampa:      'https://www.youtube.com/watch?v=ZobZuWvEfzA',
   despuesMisa:  'https://opusdei.org/es/prayers/section/?section1=27&section2=37',
   ohSenora:     'https://opusdei.org/es/prayers/section/?section1=25&section2=35#dm-prayer-148',
-  itheca:       'https://play.google.com/store/apps/details?id=com.itheca.itheca',
+  itheca:       'intent://launch/#Intent;package=com.ithecaorg.itheca;scheme=itheca;end',
   horariosApp:  'https://play.google.com/store/apps/details?id=com.itsharedservices.hdsmyc.app',
   cronica:      'https://cronicadigital.org/es/category/2026-es/mayo-2026-es/',
   prelado:      'https://opusdei.org/es/section/messages-from-the-prelate/',
@@ -353,8 +353,9 @@ const URLS = {
   whatsapp:     'https://wa.me/34608467814',
   salve:        'https://opusdei.org/es/prayers/section/?section1=25&section2=35#dm-prayer-143',
   reginaCoeli:  'https://opusdei.org/es/prayers/section/?section1=25&section2=35#dm-prayer-144',
-  ntPDF:        'https://multimedia.opusdei.org/pdf/es/preces.pdf',
-  preces:       'Preces.mp3',
+  ntPDF:        'https://multimedia.opusdei.org/pdf/es/nuevo-testamento.pdf',
+  precesAudio:  'https://www.opusdei.org/es-es/audio/preces/',
+  preces:       'https://multimedia.opusdei.org/pdf/es/preces.pdf',
   angelus:      'Angelus.mp3',
 };
 
@@ -444,7 +445,7 @@ const NORMAS_EXAMEN = [
   'Minuto heroico', 'Ofrecimiento de obras', 'Oración de la mañana',
   'Misa', 'Acción de gracias', 'Ángelus / Regina Coeli',
   'Lectura espiritual', 'Nuevo Testamento', 'Rosario',
-  'Visita al Santísimo', 'Santificación del trabajo',
+  'Visita al Santísimo',
   'Oración de la tarde', 'Preces', 'Examen de conciencia'
 ];
 
@@ -490,7 +491,7 @@ function makeDia(extras) {
     { id:'an1', n:'Ángelus / Regina Coeli', t:'12:00', tag:'5 min', tipo:'angelus',
       g:'A las 12:00 en punto, todos los días.',
       audio: URLS.angelus },
-    { id:'lec', n:'Lectura espiritual', t: extras.lecT || '13:00–13:15', tag:'15 min',
+    { id:'lec', n:'Lectura espiritual', t: extras.lecT || '13:00–13:10', tag:'10 min',
       g:'Lee despacio, como una carta personal.',
       res:[{ label:'Escrivá.org — obras completas', href:URLS.escriva, cls:'morado' }] },
     { id:'nt', n:'Nuevo Testamento', t: extras.ntT || '13:15–13:20', tag:'5 min', tipo:'nt',
@@ -498,10 +499,9 @@ function makeDia(extras) {
       res:[{ label:'Nuevo Testamento — PDF Opus Dei', href:URLS.ntPDF, cls:'amber' }] },
     { id:'ros', n:'Rosario', t: extras.rosT || 'A elegir', tag:'20 min', tipo:'rosario',
       g:'Abre el rosario y la música de fondo en dos pestañas.' },
-    { id:'vis', n:'Visita al Santísimo', t: extras.visT || 'A elegir', tag:'10 min',
-      g:'Unos minutos ante el Sagrario.' },
-    { id:'tra', n:'Santificación del trabajo', t:'Todo el día', tag:'continuo',
-      g:'Antes de cada tarea: "Señor, esto lo hago por ti."' },
+    { id:'vis', n:'Visita al Santísimo', t: extras.visT || '14:30', tag:'10 min',
+      g:'Unos minutos ante el Sagrario. Antes de empezar a trabajar.',
+      res:[{ label:'▶ Adoración en directo — YouTube', href:'https://www.youtube.com/live/aJStqLhd5lg?si=49hUAJYyZAwsNdhu', cls:'amber' }] },
   ];
 }
 
@@ -519,7 +519,10 @@ function makeNoche(extras) {
       ] },
     { id:'pr', n:'Preces', t:'22:00', tag:'10 min', tipo:'preces',
       g:'Oración comunitaria del Opus Dei antes del examen de conciencia.',
-      audio: URLS.preces },
+      res:[
+        { label:'🎵 Audio Preces — Opus Dei', href:'https://www.opusdei.org/es-es/audio/preces/', cls:'morado' },
+        { label:'📄 PDF Preces — Opus Dei', href:'https://multimedia.opusdei.org/pdf/es/preces.pdf', cls:'amber' },
+      ] },
     { id:'ex', n:'Examen de conciencia', t:'22:15', tag:'10 min', tipo:'exam',
       g:'Al marcar se abrirá el asistente nocturno.' },
   ];
